@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CuePoint — Teleprompter para videollamadas</title>
+  <meta name="description" content="Teleprompter flotante para Zoom, Meet y grabaciones. Mantén el contacto visual mientras lees tu guion.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0A09'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%2357D9A3'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ============ EDITOR ============ -->
+  <main id="editor">
+    <header class="brand">
+      <div class="led" aria-hidden="true"></div>
+      <h1>CuePoint</h1>
+      <span>teleprompter para videollamadas</span>
+    </header>
+
+    <textarea id="script" spellcheck="false" placeholder="Pega aquí tu guion…
+
+Consejo: frases cortas y una línea en blanco entre ideas. Se leen mejor mientras hablas."></textarea>
+
+    <section class="controls" aria-label="Ajustes del prompter">
+      <div class="ctrl">
+        <label for="speed">Velocidad</label>
+        <input type="range" id="speed" min="10" max="120" value="45">
+        <output id="speedOut">45</output>
+      </div>
+      <div class="ctrl">
+        <label for="fontSize">Letra</label>
+        <input type="range" id="fontSize" min="16" max="40" value="24">
+        <output id="fontOut">24px</output>
+      </div>
+      <label class="toggle"><input type="checkbox" id="mirror"> Espejo</label>
+
+      <div class="actions">
+        <button id="floatBtn" class="btn primary" title="Ventana flotante siempre visible">⇱ Flotar junto a la cámara</button>
+        <button id="startBtn" class="btn ghost" title="Pantalla completa en esta pestaña">Pantalla completa</button>
+      </div>
+    </section>
+
+    <p class="hint">
+      <strong>Flotar junto a la cámara</strong> abre una mini ventana <em>siempre encima</em> de Zoom o Meet: arrástrala hasta debajo de tu webcam.
+      Atajos: <kbd>Espacio</kbd> pausa · <kbd>↑</kbd><kbd>↓</kbd> velocidad · <kbd>←</kbd><kbd>→</kbd> saltar · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> salir.
+    </p>
+  </main>
+
+  <!-- ============ PROMPTER ============ -->
+  <div id="prompter" aria-live="off">
+    <div id="strip">
+      <div id="camDot" title="Tu webcam está justo encima"></div>
+      <div id="viewport">
+        <div class="fade top"></div>
+        <div id="scroll"></div>
+        <div class="fade bottom"></div>
+      </div>
+      <div id="bar">
+        <div id="progress"><div id="progressFill"></div></div>
+        <div class="bar-controls">
+          <button id="playBtn" title="Pausa / reanuda (Espacio)">❚❚</button>
+          <button id="slowBtn" title="Más lento (↓)">−</button>
+          <span id="hudSpeed">45</span>
+          <button id="fastBtn" title="Más rápido (↑)">+</button>
+          <span id="hudTime">0:00</span>
+          <button id="restartBtn" title="Reiniciar (R)">⟲</button>
+          <button id="exitBtn" title="Cerrar (Esc)">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="countdown"><span id="countNum">3</span></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
