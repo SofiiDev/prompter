@@ -1,6 +1,7 @@
 /* ============================================================
-   CuePoint — teleprompter para videollamadas
+   EasyPrompter — teleprompter para videollamadas
    Tipografía: Instrument Sans (UI) · Spline Sans Mono (guion)
+   Temas: negro (por defecto) · lectura (sepia) · blanco
    ============================================================ */
 
 :root {
@@ -8,14 +9,52 @@
   --panel: #14120F;
   --panel-2: #1C1915;
   --line: #2B2620;
+  --line-strong: #4A4336;
   --text: #F3EFE7;
   --dim: #97917F;
+  --placeholder: #6A6455;
+  --strip-bg: #0D0C0A;
+  --overlay: rgba(11, 10, 9, .84);
   --led: #57D9A3;                 /* luz de la webcam */
   --led-soft: rgba(87, 217, 163, .16);
   --warn: #E8B24A;
   --radius: 20px;
   --mono: "Spline Sans Mono", ui-monospace, Menlo, Consolas, monospace;
   --ui: "Instrument Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+
+/* Tema lectura: papel sepia, cansa menos la vista */
+:root[data-theme="reading"] {
+  --bg: #F1E7D0;
+  --panel: #EADFC5;
+  --panel-2: #E2D4B4;
+  --line: #D3C29E;
+  --line-strong: #B3A17C;
+  --text: #2E2618;
+  --dim: #7A6E55;
+  --placeholder: #9A8D6F;
+  --strip-bg: #EFE4C9;
+  --overlay: rgba(241, 231, 208, .88);
+  --led: #2E9E6F;
+  --led-soft: rgba(46, 158, 111, .18);
+  --warn: #A66A10;
+}
+
+/* Tema blanco */
+:root[data-theme="light"] {
+  --bg: #FFFFFF;
+  --panel: #F5F5F2;
+  --panel-2: #ECECE7;
+  --line: #DDDDD5;
+  --line-strong: #B9B9AF;
+  --text: #171714;
+  --dim: #6E6E66;
+  --placeholder: #9C9C93;
+  --strip-bg: #FFFFFF;
+  --overlay: rgba(255, 255, 255, .88);
+  --led: #1E9E66;
+  --led-soft: rgba(30, 158, 102, .16);
+  --warn: #A66A10;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -82,8 +121,8 @@ textarea {
   outline: none;
   transition: border-color .15s;
 }
-textarea:focus { border-color: #4A4336; }
-textarea::placeholder { color: #6A6455; }
+textarea:focus { border-color: var(--line-strong); }
+textarea::placeholder { color: var(--placeholder); }
 
 .controls {
   display: flex;
@@ -134,6 +173,32 @@ input[type=range]::-moz-range-thumb {
   border: none;
 }
 
+/* selector de tema */
+.seg {
+  display: flex;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+.seg button {
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font-family: var(--ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.seg button.on {
+  background: var(--text);
+  color: var(--bg);
+}
+.seg button:not(.on):hover { color: var(--text); }
+
 .toggle {
   display: flex;
   align-items: center;
@@ -160,7 +225,7 @@ input[type=range]::-moz-range-thumb {
 .btn.primary { background: var(--text); color: var(--bg); border: none; }
 .btn.primary:hover { opacity: .9; }
 .btn.ghost { background: transparent; color: var(--dim); border: 1px solid var(--line); }
-.btn.ghost:hover { color: var(--text); border-color: #4A4336; }
+.btn.ghost:hover { color: var(--text); border-color: var(--line-strong); }
 
 :is(.btn, textarea, input, button):focus-visible {
   outline: 2px solid var(--led);
@@ -200,15 +265,17 @@ input[type=range]::-moz-range-thumb {
   position: relative;
   width: min(680px, 96vw);
   margin-top: 10px;
-  background: #0D0C0A;
+  background: var(--strip-bg);
   border: 1px solid var(--line);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
 }
+:root[data-theme="reading"] #strip,
+:root[data-theme="light"] #strip { box-shadow: 0 18px 50px rgba(0, 0, 0, .18); }
 
 /* modo flotante: la franja llena toda la mini ventana */
-body.floating { background: #0D0C0A; }
+body.floating { background: var(--strip-bg); }
 body.floating #strip {
   width: 100%;
   height: 100%;
@@ -251,10 +318,10 @@ body.floating #viewport { flex: 1; }
   pointer-events: none;
   z-index: 2;
 }
-.fade.top    { top: 0;    background: linear-gradient(#0D0C0A, transparent); }
-.fade.bottom { bottom: 0; background: linear-gradient(transparent, #0D0C0A); }
+.fade.top    { top: 0;    background: linear-gradient(var(--strip-bg), transparent); }
+.fade.bottom { bottom: 0; background: linear-gradient(transparent, var(--strip-bg)); }
 
-#bar { background: #0D0C0A; }
+#bar { background: var(--strip-bg); }
 
 #progress { height: 2px; background: var(--line); position: relative; }
 #progressFill {
@@ -300,7 +367,8 @@ body.floating #viewport { flex: 1; }
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(11, 10, 9, .84);
+  background: var(--overlay);
+  color: var(--text);
   font-family: var(--mono);
   font-size: 96px;
   font-weight: 500;
@@ -315,7 +383,27 @@ body.floating #viewport { flex: 1; }
 }
 
 @media (max-width: 620px) {
-  .controls { padding: 14px; }
+  #editor { padding: 20px 14px 14px; gap: 12px; }
+  .brand span { display: none; }
+  textarea { padding: 16px 16px; font-size: 15px; }
+  .controls { padding: 14px; gap: 12px; }
+  .ctrl { width: 100%; }
+  .ctrl input[type=range] { flex: 1; width: auto; }
+  .seg { flex: 1; }
+  .seg button { flex: 1; padding: 9px 8px; }
   .actions { margin-left: 0; width: 100%; flex-direction: column; }
-  .btn { width: 100%; }
+  .btn { width: 100%; padding: 14px 20px; }
+  .hint { font-size: 11.5px; }
+
+  /* prompter cómodo para leer en el teléfono */
+  #strip { width: 100vw; margin-top: 0; border-radius: 0 0 18px 18px; border-left: none; border-right: none; }
+  #scroll { padding: 0 22px; }
+  .bar-controls { gap: 14px; padding: 10px 12px; }
+  .bar-controls button { font-size: 16px; padding: 6px 10px; }
+}
+
+/* pantallas táctiles: objetivos de toque más generosos */
+@media (pointer: coarse) {
+  .bar-controls button { min-width: 40px; min-height: 40px; }
+  .toggle input { width: 18px; height: 18px; }
 }

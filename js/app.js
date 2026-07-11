@@ -1,9 +1,10 @@
 /* ============================================================
-   CuePoint — teleprompter para videollamadas
+   EasyPrompter — teleprompter para videollamadas
    - Motor de desplazamiento con requestAnimationFrame
    - Ventana flotante siempre visible (Document Picture-in-Picture)
-   - Fallback a popup para navegadores sin soporte
-   - Persistencia del guion y ajustes en localStorage
+   - Fallback a popup en escritorio y a pantalla completa en móvil
+   - Temas: negro / lectura / blanco
+   - Persistencia del guion y ajustes en localStorage (validada)
    ============================================================ */
 
 (() => {
@@ -29,6 +30,7 @@
   const progressFill = $("progressFill");
   const countdown = $("countdown");
   const countNum  = $("countNum");
+  const themeSeg  = $("themeSeg");
 
   const DEMO =
     "Hola, gracias por acompañarme hoy.\n\n" +
@@ -38,7 +40,8 @@
     "Ajusta la velocidad con las flechas y pausa con la barra espaciadora " +
     "cuando quieras improvisar.";
 
-  const STORAGE_KEY = "cuepoint.v1";
+  const STORAGE_KEY = "easyprompter.v1";
+  const THEMES = ["dark", "reading", "light"];
 
   // ---------- Estado ----------
   const state = {
@@ -50,7 +53,16 @@
     maxOffset: 0,
     pipWin: null,     // ventana Document Picture-in-Picture
     floating: false,  // esta página corre en modo flotante (popup fallback)
+    theme: "dark",
+    pipSize: { w: 620, h: 190 },  // último tamaño de la ventana flotante
+    wakeLock: null,   // mantiene la pantalla encendida en móvil
   };
+
+  // valores externos (localStorage) siempre validados antes de usarse
+  function clampNum(v, min, max, fallback) {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+  }
 
   // ---------- Persistencia ----------
   function save() {
@@ -60,6 +72,8 @@
         speed: speedIn.value,
         fontSize: fontIn.value,
         mirror: mirrorIn.checked,
+        theme: state.theme,
+        pipSize: state.pipSize,
       }));
     } catch { /* almacenamiento no disponible: se ignora */ }
   }
@@ -70,9 +84,16 @@
       if (!raw) return;
       const data = JSON.parse(raw);
       if (typeof data.script === "string") scriptEl.value = data.script;
-      if (data.speed)  speedIn.value = data.speed;
-      if (data.fontSize) fontIn.value = data.fontSize;
+      speedIn.value = clampNum(data.speed, 10, 120, 45);
+      fontIn.value  = clampNum(data.fontSize, 16, 40, 24);
       mirrorIn.checked = Boolean(data.mirror);
+      if (THEMES.includes(data.theme)) applyTheme(data.theme);
+      if (data.pipSize && typeof data.pipSize === "object") {
+        state.pipSize = {
+          w: clampNum(data.pipSize.w, 280, 1400, 620),
+          h: clampNum(data.pipSize.h, 120, 700, 190),
+        };
+      }
       syncOutputs();
     } catch { /* datos corruptos: se ignoran */ }
   }
@@ -81,6 +102,41 @@
     speedOut.textContent = speedIn.value;
     fontOut.textContent = fontIn.value + "px";
     hudSpeed.textContent = speedIn.value;
+  }
+
+  // ---------- Temas ----------
+  function applyTheme(t) {
+    if (!THEMES.includes(t)) return;
+    state.theme = t;
+    document.documentElement.dataset.theme = t;
+    if (state.pipWin && !state.pipWin.closed) {
+      state.pipWin.document.documentElement.dataset.theme = t;
+    }
+    themeSeg.querySelectorAll("button").forEach((b) => {
+      const on = b.dataset.theme === t;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", String(on));
+    });
+  }
+
+  themeSeg.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-theme]");
+    if (b) { applyTheme(b.dataset.theme); save(); }
+  });
+
+  // ---------- Pantalla siempre encendida (móvil) ----------
+  async function updateWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      if (state.playing && !state.wakeLock) {
+        state.wakeLock = await navigator.wakeLock.request("screen");
+        state.wakeLock.addEventListener("release", () => { state.wakeLock = null; });
+      } else if (!state.playing && state.wakeLock) {
+        const wl = state.wakeLock;
+        state.wakeLock = null;
+        await wl.release();
+      }
+    } catch { /* sin permiso o pestaña oculta: se ignora */ }
   }
 
   // ---------- Ventana anfitriona del bucle de animación ----------
@@ -171,6 +227,7 @@
     state.playing = v;
     playBtn.textContent = v ? "❚❚" : "▶";
     playBtn.className = v ? "playing" : "paused";
+    updateWakeLock();
   }
 
   // ---------- Cuenta regresiva ----------
@@ -236,18 +293,24 @@
     save();
 
     if (!("documentPictureInPicture" in window)) {
-      // Fallback: popup pequeño (no siempre visible, pero independiente)
+      // En móvil no hay ventanas flotantes: usar pantalla completa en la pestaña
+      if (matchMedia("(pointer: coarse)").matches) {
+        startInTab();
+        return;
+      }
+      // Fallback de escritorio: popup pequeño (no siempre visible, pero independiente)
       window.open(
         location.pathname + "?float=1",
-        "cuepoint",
-        "popup=yes,width=620,height=200,top=40,left=" + Math.round(screen.width / 2 - 310)
+        "easyprompter",
+        "popup=yes,width=" + state.pipSize.w + ",height=" + state.pipSize.h +
+          ",top=40,left=" + Math.round(screen.width / 2 - state.pipSize.w / 2)
       );
       return;
     }
 
     const pipWin = await documentPictureInPicture.requestWindow({
-      width: 620,
-      height: 190,
+      width: state.pipSize.w,
+      height: state.pipSize.h,
     });
     state.pipWin = pipWin;
 
@@ -255,7 +318,8 @@
     document.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
       pipWin.document.head.appendChild(node.cloneNode(true));
     });
-    pipWin.document.title = "CuePoint";
+    pipWin.document.title = "EasyPrompter";
+    pipWin.document.documentElement.dataset.theme = state.theme;
     pipWin.document.body.classList.add("floating");
 
     // Mover la franja a la ventana flotante
@@ -263,7 +327,12 @@
     pipWin.document.body.appendChild(strip);
 
     bindKeys(pipWin);
-    pipWin.addEventListener("resize", layout);
+    // el usuario puede estirar la mini ventana: readaptar y recordar el tamaño
+    pipWin.addEventListener("resize", () => {
+      state.pipSize = { w: pipWin.innerWidth, h: pipWin.innerHeight };
+      save();
+      layout();
+    });
     pipWin.addEventListener("pagehide", teardownFloating);
 
     state.offset = 0;
@@ -359,6 +428,18 @@
 
   // ---------- Arranque ----------
   load();
+
+  // reintentar el wake lock al volver a la app (el sistema lo libera al ocultarla)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") updateWakeLock();
+  });
+
+  // PWA instalable (permite anclar EasyPrompter a la barra de tareas)
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => { /* opcional */ });
+    });
+  }
 
   // Fallback popup: ?float=1 abre directamente el prompter a pantalla completa
   if (new URLSearchParams(location.search).has("float")) {

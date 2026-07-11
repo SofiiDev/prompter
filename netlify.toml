@@ -1,10 +1,23 @@
-# CuePoint — sitio estático, sin paso de build
+# EasyPrompter — sitio estático, sin paso de build
 [build]
   publish = "."
 
 [[headers]]
   for = "/*"
   [headers.values]
+    # Política de contenido estricta: solo recursos propios + Google Fonts.
+    # Bloquea scripts inline/externos, iframes, objetos y envíos de formularios.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+    # La app no usa cámara, micrófono ni sensores: negarlos explícitamente.
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    # el navegador debe revalidar el service worker en cada visita
+    Cache-Control = "no-cache"
