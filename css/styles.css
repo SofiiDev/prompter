@@ -359,6 +359,19 @@ body.floating #viewport { flex: 1; }
 #playBtn.playing { color: var(--led); }
 #playBtn.paused  { color: var(--warn); }
 
+/* ---------- Overlay móvil (canvas → video PiP) ---------- */
+
+/* el canvas se dibuja fuera de pantalla; el video debe seguir "visible"
+   para poder entrar en Picture-in-Picture */
+#pipCanvas { display: none; }
+#pipVideo {
+  position: fixed;
+  right: 2px; bottom: 2px;
+  width: 2px; height: 2px;
+  opacity: .01;
+  pointer-events: none;
+}
+
 /* ---------- Cuenta regresiva ---------- */
 
 #countdown {

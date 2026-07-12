@@ -2,12 +2,13 @@
    Cachea la carcasa de la app para que funcione sin conexión y sea
    instalable (anclable a la barra de tareas / pantalla de inicio). */
 
-const CACHE = "easyprompter-v1";
+const CACHE = "easyprompter-v2";
 const ASSETS = [
   "./",
   "index.html",
   "css/styles.css",
   "js/app.js",
+  "js/ticker.js",
   "manifest.webmanifest",
   "icons/icon.svg",
   "icons/icon-maskable.svg",

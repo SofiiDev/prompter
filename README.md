@@ -4,7 +4,8 @@ Teleprompter flotante para videollamadas. El guion se desliza en una mini ventan
 
 ## Características
 
-- **Ventana flotante siempre encima** de cualquier app (Zoom incluido), mediante la API Document Picture-in-Picture de Chrome y Edge. En navegadores de escritorio sin soporte se abre un popup independiente; en móvil se usa pantalla completa.
+- **Ventana flotante siempre encima** de cualquier app (Zoom incluido), mediante la API Document Picture-in-Picture de Chrome y Edge. En navegadores de escritorio sin soporte se abre un popup independiente.
+- **Flotante también en el móvil**: el guion se dibuja en un canvas y se emite como video en Picture-in-Picture, así la ventanita queda **sobre TikTok, Instagram, la cámara o cualquier app**. Un worker mantiene el desplazamiento aunque el navegador quede en segundo plano, y puedes pausar/reanudar desde los controles de la propia ventanita. Si el dispositivo no soporta PiP de video, se usa pantalla completa.
 - **Tres temas de lectura**: negro, lectura (sepia) y blanco.
 - **Ventana adaptable**: estira la mini ventana al tamaño que quieras; EasyPrompter lo recuerda para la próxima vez.
 - **Instalable como app (PWA)**: ancla EasyPrompter a la barra de tareas o a la pantalla de inicio del móvil, con su propia ventana y funcionamiento sin conexión.
@@ -59,7 +60,8 @@ Cada `git push` a la rama publicada desplegará automáticamente una nueva versi
 ```
 ├── index.html            # Interfaz: editor y franja del prompter
 ├── css/styles.css        # Estilos y temas (Instrument Sans + Spline Sans Mono)
-├── js/app.js             # Motor de scroll, ventana flotante, temas y persistencia
+├── js/app.js             # Motor de scroll, ventanas flotantes, temas y persistencia
+├── js/ticker.js          # Worker: mantiene el scroll móvil en segundo plano
 ├── sw.js                 # Service worker (PWA, caché del propio origen)
 ├── manifest.webmanifest  # Manifiesto de instalación
 ├── icons/                # Icono de la app (SVG + PNG)

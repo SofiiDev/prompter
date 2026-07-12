@@ -60,10 +60,15 @@ Consejo: frases cortas y una línea en blanco entre ideas. Se leen mejor mientra
 
     <p class="hint">
       <strong>Flotar junto a la cámara</strong> abre una mini ventana <em>siempre encima</em> de Zoom o Meet: arrástrala hasta debajo de tu webcam y estírala al tamaño que prefieras (lo recuerda).
+      En el móvil abre una ventanita de video que queda <em>sobre cualquier app</em>: TikTok, Instagram o la cámara.
       Para <strong>anclar EasyPrompter a la barra de tareas</strong>, instálala desde el menú del navegador (⋮ → «Instalar EasyPrompter») y fija su icono.
       Atajos: <kbd>Espacio</kbd> pausa · <kbd>↑</kbd><kbd>↓</kbd> velocidad · <kbd>←</kbd><kbd>→</kbd> saltar · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> salir.
     </p>
   </main>
+
+  <!-- ============ OVERLAY MÓVIL (PiP de video sobre otras apps) ============ -->
+  <canvas id="pipCanvas" width="720" height="320" aria-hidden="true"></canvas>
+  <video id="pipVideo" muted playsinline aria-hidden="true"></video>
 
   <!-- ============ PROMPTER ============ -->
   <div id="prompter" aria-live="off">

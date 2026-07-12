@@ -31,6 +31,11 @@
   const countdown = $("countdown");
   const countNum  = $("countNum");
   const themeSeg  = $("themeSeg");
+  const floatBtn  = $("floatBtn");
+  const pipCanvas = $("pipCanvas");
+  const pipVideo  = $("pipVideo");
+
+  const FLOAT_LABEL = "⇱ Flotar junto a la cámara";
 
   const DEMO =
     "Hola, gracias por acompañarme hoy.\n\n" +
@@ -112,6 +117,7 @@
     if (state.pipWin && !state.pipWin.closed) {
       state.pipWin.document.documentElement.dataset.theme = t;
     }
+    if (overlay.active) { refreshOverlayColors(); drawOverlay(); }
     themeSeg.querySelectorAll("button").forEach((b) => {
       const on = b.dataset.theme === t;
       b.classList.toggle("on", on);
@@ -227,8 +233,208 @@
     state.playing = v;
     playBtn.textContent = v ? "❚❚" : "▶";
     playBtn.className = v ? "playing" : "paused";
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.playbackState = v ? "playing" : "paused";
+    }
     updateWakeLock();
   }
+
+  // ---------- Overlay móvil: canvas → video Picture-in-Picture ----------
+  // En Android/iOS no hay ventanas flotantes de documento, pero un video en
+  // PiP sí queda encima de cualquier app (TikTok, Instagram, la cámara…).
+  // El guion se dibuja en un canvas que se emite como stream de video.
+  const overlay = {
+    active: false,
+    ctx: pipCanvas.getContext("2d"),
+    stream: null,
+    ticker: null,     // worker: sus timers no se estrangulan en segundo plano
+    lines: [],
+    fontPx: 48,
+    lineH: 72,
+    padTop: 0,
+    maxOffset: 0,
+    offset: 0,
+    lastT: 0,
+    scale: 2,         // px de canvas por px "de pantalla" (nitidez)
+    count: 0,         // número de la cuenta regresiva dibujado en el canvas
+    colors: { bg: "#0D0C0A", text: "#F3EFE7", line: "#2B2620", led: "#57D9A3", dim: "#97917F" },
+  };
+
+  function refreshOverlayColors() {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name, fb) => (cs.getPropertyValue(name).trim() || fb);
+    overlay.colors = {
+      bg:   v("--strip-bg", "#0D0C0A"),
+      text: v("--text", "#F3EFE7"),
+      line: v("--line", "#2B2620"),
+      led:  v("--led", "#57D9A3"),
+      dim:  v("--dim", "#97917F"),
+    };
+  }
+
+  function buildOverlayLines() {
+    const c = overlay.ctx;
+    const W = pipCanvas.width, H = pipCanvas.height;
+    overlay.fontPx = clampNum(fontIn.value, 16, 40, 24) * overlay.scale;
+    overlay.lineH = Math.round(overlay.fontPx * 1.5);
+    c.font = `${overlay.fontPx}px "Spline Sans Mono", ui-monospace, monospace`;
+
+    const maxW = W - 64;
+    const lines = [];
+    for (const para of (scriptEl.value.trim() || DEMO).split("\n")) {
+      if (!para.trim()) { lines.push(""); continue; }
+      let cur = "";
+      for (const word of para.split(/\s+/)) {
+        const probe = cur ? cur + " " + word : word;
+        if (c.measureText(probe).width <= maxW || !cur) cur = probe;
+        else { lines.push(cur); cur = word; }
+      }
+      if (cur) lines.push(cur);
+    }
+    overlay.lines = lines;
+    overlay.padTop = H * 0.42;
+    overlay.maxOffset = Math.max(0, overlay.padTop + lines.length * overlay.lineH + H * 0.6 - H);
+  }
+
+  function drawOverlay() {
+    const c = overlay.ctx;
+    const W = pipCanvas.width, H = pipCanvas.height;
+    const col = overlay.colors;
+
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.fillStyle = col.bg;
+    c.fillRect(0, 0, W, H);
+
+    if (mirrorIn.checked) { c.translate(W, 0); c.scale(-1, 1); }
+    c.fillStyle = col.text;
+    c.font = `${overlay.fontPx}px "Spline Sans Mono", ui-monospace, monospace`;
+    c.textBaseline = "top";
+    c.textAlign = "left";
+    const startY = overlay.padTop - overlay.offset;
+    overlay.lines.forEach((ln, i) => {
+      const y = startY + i * overlay.lineH;
+      if (y > -overlay.lineH && y < H && ln) c.fillText(ln, 32, y);
+    });
+
+    // desvanecidos arriba y abajo (hex de 8 dígitos: bg transparente)
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    const fadeH = H * 0.3;
+    const gt = c.createLinearGradient(0, 0, 0, fadeH);
+    gt.addColorStop(0, col.bg); gt.addColorStop(1, col.bg + "00");
+    c.fillStyle = gt; c.fillRect(0, 0, W, fadeH);
+    const gb = c.createLinearGradient(0, H - fadeH, 0, H);
+    gb.addColorStop(0, col.bg + "00"); gb.addColorStop(1, col.bg);
+    c.fillStyle = gb; c.fillRect(0, H - fadeH, W, fadeH);
+
+    // punto de la cámara y barra de progreso
+    c.fillStyle = col.led;
+    c.beginPath(); c.arc(W / 2, 12, 5, 0, Math.PI * 2); c.fill();
+    c.fillStyle = col.line; c.fillRect(0, H - 6, W, 6);
+    c.fillStyle = col.led;
+    c.fillRect(0, H - 6, W * (overlay.maxOffset ? overlay.offset / overlay.maxOffset : 0), 6);
+
+    // cuenta regresiva o indicador de pausa
+    if (overlay.count > 0) {
+      c.fillStyle = col.bg + "D9";
+      c.fillRect(0, 0, W, H);
+      c.fillStyle = col.text;
+      c.font = `${H * 0.5}px "Spline Sans Mono", ui-monospace, monospace`;
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText(String(overlay.count), W / 2, H / 2);
+    } else if (!state.playing) {
+      c.fillStyle = col.dim;
+      c.font = `28px "Spline Sans Mono", ui-monospace, monospace`;
+      c.textAlign = "right"; c.textBaseline = "top";
+      c.fillText("❚❚", W - 20, 12);
+    }
+  }
+
+  function overlayStep() {
+    const now = performance.now();
+    if (state.playing) {
+      const dt = Math.min(0.05, Math.max(0, (now - overlay.lastT) / 1000));
+      overlay.offset += pxPerSec() * overlay.scale * dt;
+      if (overlay.offset >= overlay.maxOffset) {
+        overlay.offset = overlay.maxOffset;
+        setPlaying(false);
+      }
+    }
+    overlay.lastT = now;
+    drawOverlay();
+  }
+
+  function overlayLoop() {
+    if (!overlay.active) return;
+    overlayStep();
+    requestAnimationFrame(overlayLoop);
+  }
+
+  async function startMobileOverlay() {
+    buildOverlayLines();
+    refreshOverlayColors();
+    overlay.offset = 0;
+    overlay.count = 0;
+    drawOverlay();
+
+    try {
+      if (!overlay.stream) {
+        overlay.stream = pipCanvas.captureStream(30);
+        pipVideo.srcObject = overlay.stream;
+      }
+      pipVideo.muted = true;
+      await pipVideo.play();
+      if (pipVideo.requestPictureInPicture) {
+        await pipVideo.requestPictureInPicture();
+      } else if (pipVideo.webkitSupportsPresentationMode &&
+                 pipVideo.webkitSupportsPresentationMode("picture-in-picture")) {
+        pipVideo.webkitSetPresentationMode("picture-in-picture");
+      } else {
+        throw new Error("PiP de video no disponible");
+      }
+    } catch {
+      // sin PiP de video: al menos pantalla completa en la pestaña
+      startInTab();
+      return;
+    }
+
+    overlay.active = true;
+    floatBtn.textContent = "✕ Cerrar ventana flotante";
+
+    if (!overlay.ticker) {
+      try {
+        overlay.ticker = new Worker("js/ticker.js");
+        overlay.ticker.onmessage = () => {
+          if (overlay.active && document.hidden) overlayStep();
+        };
+      } catch { /* sin worker: el rAF cubre el primer plano */ }
+    }
+
+    if ("mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: "EasyPrompter" });
+        navigator.mediaSession.setActionHandler("play", () => setPlaying(true));
+        navigator.mediaSession.setActionHandler("pause", () => setPlaying(false));
+      } catch { /* metadatos opcionales */ }
+    }
+
+    overlay.lastT = performance.now();
+    overlayLoop();
+    countdownThen(() => setPlaying(true));
+  }
+
+  function stopOverlay() {
+    if (!overlay.active) return;
+    overlay.active = false;
+    cancelCountdown();
+    setPlaying(false);
+    pipVideo.pause();
+    floatBtn.textContent = FLOAT_LABEL;
+  }
+
+  pipVideo.addEventListener("leavepictureinpicture", stopOverlay);
+  pipVideo.addEventListener("webkitpresentationmodechanged", () => {
+    if (pipVideo.webkitPresentationMode === "inline") stopOverlay();
+  });
 
   // ---------- Cuenta regresiva ----------
   // Se muestra en la ventana donde vive el prompter: si hay ventana
@@ -240,6 +446,7 @@
     let n = 3;
     countNum.textContent = n;
     countdown.classList.add("show");
+    if (overlay.active) { overlay.count = n; drawOverlay(); }
     state.countdownIv = setInterval(() => {
       n -= 1;
       if (n <= 0) {
@@ -247,6 +454,7 @@
         fn();
       } else {
         countNum.textContent = n;
+        if (overlay.active) { overlay.count = n; drawOverlay(); }
       }
     }, 800);
   }
@@ -256,6 +464,7 @@
       clearInterval(state.countdownIv);
       state.countdownIv = null;
     }
+    overlay.count = 0;
     countdown.classList.remove("show");
   }
 
@@ -290,12 +499,22 @@
 
   // ---------- Modo flotante (Document Picture-in-Picture) ----------
   async function startFloating() {
+    // segundo toque en el móvil: cerrar la ventanita flotante
+    if (overlay.active) {
+      try {
+        if (document.pictureInPictureElement) await document.exitPictureInPicture();
+        else if (pipVideo.webkitSetPresentationMode) pipVideo.webkitSetPresentationMode("inline");
+      } catch { /* ya cerrada */ }
+      stopOverlay();
+      return;
+    }
     save();
 
     if (!("documentPictureInPicture" in window)) {
-      // En móvil no hay ventanas flotantes: usar pantalla completa en la pestaña
+      // En móvil no hay ventanas de documento, pero el PiP de video
+      // sí flota sobre cualquier app (TikTok, Instagram, la cámara…)
       if (matchMedia("(pointer: coarse)").matches) {
-        startInTab();
+        startMobileOverlay();
         return;
       }
       // Fallback de escritorio: popup pequeño (no siempre visible, pero independiente)
@@ -415,8 +634,22 @@
   viewport.addEventListener("click", () => setPlaying(!state.playing));
 
   speedIn.addEventListener("input", () => { syncOutputs(); save(); });
-  fontIn.addEventListener("input", () => { syncOutputs(); if (prompterActive()) layout(); save(); });
-  mirrorIn.addEventListener("change", () => { applyTransform(); save(); });
+  fontIn.addEventListener("input", () => {
+    syncOutputs();
+    if (prompterActive()) layout();
+    if (overlay.active) {
+      const ratio = overlay.maxOffset ? overlay.offset / overlay.maxOffset : 0;
+      buildOverlayLines();
+      overlay.offset = ratio * overlay.maxOffset;
+      drawOverlay();
+    }
+    save();
+  });
+  mirrorIn.addEventListener("change", () => {
+    applyTransform();
+    if (overlay.active) drawOverlay();
+    save();
+  });
   scriptEl.addEventListener("input", save);
 
   window.addEventListener("resize", () => { if (prompterActive()) layout(); });
