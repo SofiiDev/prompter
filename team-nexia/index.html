@@ -405,7 +405,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
   <header class="masthead">
     <div class="eyebrow">Team Nexia · Prototipo</div>
     <h1>Comercios Amigos del barrio</h1>
-    <p class="lede">La agenda y el mapa de los locales que le dan la bienvenida a quien se muda con Team Nexia. Probá la app como vecino, como comercio o como inmobiliaria.</p>
+    <p class="lede">Cuando una familia se muda con Team Nexia, el barrio la recibe: un mapa con los comercios de la zona y un beneficio de bienvenida en cada uno. Probá la app desde los tres lados: vecino, comercio e inmobiliaria.</p>
   </header>
 
   <div class="view-switch seg" role="group" aria-label="Qué ver">
@@ -465,7 +465,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
           </li>
           <li class="tactic">
             <h3>Un código por local, desde el minuto uno</h3>
-            <p>Al terminar el alta el local recibe su código (por ejemplo NX-ESPIGA) y un QR que lleva a un formulario corto con ese código ya cargado. Todo contacto que llega por ahí queda a su nombre.</p>
+            <p>Al terminar el alta, el local recibe su código (por ejemplo NX-ESPIGA). Va dentro del QR del cartel y del link para WhatsApp, así cada contacto queda a su nombre sin que nadie tenga que anotarlo.</p>
             <p class="why">Sin atribución no hay reconocimiento, y sin reconocimiento el local deja de referir.</p>
           </li>
           <li class="tactic">
@@ -476,7 +476,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
           <li class="tactic">
             <h3>Herramientas listas para usar</h3>
             <p>El cartel de caja, un calco de vitrina, un mensaje armado para estados y listas de difusión de WhatsApp, y una frase para el mostrador.</p>
-            <figure class="quote"><figcaption>Frase para el mostrador</figcaption><blockquote>“¿Se están por mudar o vender? Nosotros trabajamos con Team Nexia. Escaneá el QR de la vitrina y te llaman hoy.”</blockquote></figure>
+            <figure class="quote"><figcaption>Frase para el mostrador</figcaption><blockquote>“¿Se están por mudar o vender? Escaneá el QR de acá al lado y te atiende Carla, de Team Nexia.”</blockquote></figure>
           </li>
           <li class="tactic">
             <h3>Respuesta rápida y aviso al local</h3>
@@ -516,9 +516,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
         <div class="eyebrow">El pitch en la visita</div>
         <h2>Qué le decís al comerciante</h2>
         <ol>
-          <li><b>Te mandamos clientes nuevos.</b> Cada mes se mudan familias al barrio con nosotros y les damos tu dirección el primer día.</li>
-          <li><b>No te cuesta nada.</b> Solo un beneficio de bienvenida que vos elegís, por única vez.</li>
-          <li><b>Lo ves en números.</b> Te mandamos un reporte de cuántos vecinos llegaron por Nexia.</li>
+          <li><b>Te mandamos clientes nuevos.</b> Cada mes se mudan familias al barrio con nosotros, y el primer día ya saben dónde estás.</li>
+          <li><b>No pagás nada.</b> Solo elegís un beneficio de bienvenida, una vez por familia.</li>
+          <li><b>Ves los resultados.</b> Cada mes te contamos cuántos vecinos llegaron por Nexia.</li>
           <li><b>Te dejamos un cartelito al lado de la caja</b> con mi QR. Si un cliente se está por mudar o vender, me escribe directo y vos sumás el contacto.</li>
         </ol>
         <p class="muted">Mostrá la app en modo Comercio y hacé el alta con ellos en el momento.</p>
@@ -701,7 +701,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
   const agentMsg = (a, shopName) => 'Hola ' + a.short + ', te escribo desde el QR de ' + shopName + ' (' + codeFor(shopName) + '). Quiero consultar por una propiedad.';
   function cartelHTML(shopName, a, fmt) {
     const link = agentLink(a, shopName), q = qr(link, 'Código QR para escribirle a ' + a.name + ' por WhatsApp');
-    const agentRow = '<div class="agent"><span class="avatar" aria-hidden="true">' + initials(a.name) + '</span><span><b>' + esc(a.name) + '</b><span>Tu agente de Team Nexia</span></span><span class="code">' + codeFor(shopName) + '</span></div>';
+    const agentRow = '<div class="agent"><span class="avatar" aria-hidden="true">' + initials(a.name) + '</span><span><b>' + esc(a.name) + '</b><span>Agente de Team Nexia</span></span><span class="code">' + codeFor(shopName) + '</span></div>';
     const band = '<div class="band"><small>Comercio Amigo · Team Nexia</small><b>' + esc(shopName) + '</b></div>';
     if (fmt === 'calco') return '<div class="cartel calco" role="img" aria-label="Calco de 10 por 10 centímetros para ' + esc(shopName) + ' con el QR de ' + esc(a.name) + '">' + band + '<div class="mid">' + q + '<div><h4>¿Te mudás, vendés o alquilás?</h4><p class="cta">Escaneá y escribile a ' + esc(a.short) + ' por WhatsApp.</p></div></div>' + agentRow + '</div>';
     return '<div class="cartel a6" role="img" aria-label="Soporte A6 para ' + esc(shopName) + ' con el QR de ' + esc(a.name) + '">' + band + '<h4>¿Te mudás, vendés o alquilás?</h4><div class="qr-area">' + q + '</div><p class="cta">Escaneá y escribile a ' + esc(a.short) + ' por WhatsApp</p>' + agentRow + '</div>';
@@ -779,32 +779,32 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
   V.inicio = function () {
     const a = active(), near = byDist(a);
     return '<div class="hero"><div class="brandline"><span class="logo-mark" aria-hidden="true">N</span>Team Nexia · Barrio</div>' +
-      '<h2 class="screen-title" tabindex="-1">Hola, ' + esc(S.vecino.nombres) + '</h2><p>Bienvenidos a ' + esc(S.vecino.dir) + '. Estos comercios del barrio les dan un beneficio por ser vecinos nuevos.</p>' +
-      '<div><span class="pill on-brand">' + ic('ticket') + 'Pase activo hasta el ' + fmtDate(S.vecino.mudanza, 90) + '</span></div></div>' +
+      '<h2 class="screen-title" tabindex="-1">¡Bienvenidos al barrio, ' + esc(S.vecino.nombres) + '!</h2><p>Tu casa nueva está en ' + esc(S.vecino.dir) + '. Estos comercios de la zona te esperan con un beneficio de bienvenida.</p>' +
+      '<div><span class="pill on-brand">' + ic('ticket') + 'Beneficios disponibles hasta el ' + fmtDate(S.vecino.mudanza, 90) + '</span></div></div>' +
       '<div class="pad">' +
       '<div class="stats"><div class="stat"><b>' + a.length + '</b><span>comercios amigos</span></div><div class="stat"><b>' + a.filter((s) => cuadras(s) <= 3).length + '</b><span>a 3 cuadras o menos</span></div><div class="stat"><b>' + S.used.size + '</b><span>beneficios usados</span></div></div>' +
-      '<div class="group"><div class="sec-head"><h3>Para los primeros días</h3><button type="button" class="link-btn" data-action="tab" data-tab="mapa">Ver mapa</button></div>' +
+      '<div class="group"><div class="sec-head"><h3>Para tus primeros días en la casa</h3><button type="button" class="link-btn" data-action="tab" data-tab="mapa">Ver mapa</button></div>' +
       '<div class="cards2">' + MUDANZA.map((id) => shops.find((s) => s.id === id)).map((s) => '<button type="button" class="mcard" data-action="open" data-id="' + s.id + '">' + catDot(s.cat, 34) + '<strong>' + esc(s.name) + '</strong><span class="pill benefit">' + esc(s.ben) + '</span><span class="meta">A ' + cuadrasTxt(s) + '</span></button>').join('') + '</div></div>' +
       '<div class="group"><div class="sec-head"><h3>Lo más cerca de tu casa</h3><button type="button" class="link-btn" data-action="tab" data-tab="beneficios">Ver todos</button></div>' + shopList(near.slice(0, 5)) + '</div>' +
-      '<div class="card"><h3>¿Necesitás algo de la casa?</h3><p class="sub">Tu agente de Team Nexia sigue a disposición después de la mudanza.</p><div class="contact-card"><span class="avatar" aria-hidden="true">' + initials(AGENTS[0].name) + '</span><span class="body"><b>' + AGENTS[0].name + '</b><span>Tu agente en el barrio</span><span class="mono" id="nx-tel">' + AGENTS[0].tel + '</span></span></div><button type="button" class="btn ghost small" data-action="copy" data-target="nx-tel">' + ic('copy') + 'Copiar teléfono</button></div>' +
+      '<div class="card"><h3>¿Necesitás una mano?</h3><p class="sub">' + AGENTS[0].short + ' te acompañó en la mudanza y te sigue ayudando: un plomero de confianza, una duda del contrato o lo que haga falta.</p><div class="contact-card"><span class="avatar" aria-hidden="true">' + initials(AGENTS[0].name) + '</span><span class="body"><b>' + AGENTS[0].name + '</b><span>Tu agente de Team Nexia</span><span class="mono" id="nx-tel">' + AGENTS[0].tel + '</span></span></div><button type="button" class="btn ghost small" data-action="copy" data-target="nx-tel">' + ic('copy') + 'Copiar teléfono de ' + AGENTS[0].short + '</button></div>' +
       '</div>';
   };
   V.mapa = function () {
     const list = byDist(active().filter((s) => S.cat === 'todas' || s.cat === S.cat));
-    return '<div class="pad"><div class="group"><h2 class="screen-title" tabindex="-1">Tu barrio</h2><p class="lead">Tocá un comercio para ver su beneficio.</p></div>' + chipRow() +
+    return '<div class="pad"><div class="group"><h2 class="screen-title" tabindex="-1">Tu barrio</h2><p class="lead">Tocá un comercio para ver qué te regala y cómo llegar.</p></div>' + chipRow() +
       '<div class="group"><div class="map">' + mapSVG(list) + '</div>' +
       '<div class="map-legend"><span><i class="home-dot" aria-hidden="true"></i>Tu casa</span><span><i class="ring-dash" aria-hidden="true"></i>3 cuadras a la redonda</span><span>1 cuadra = 100 m</span></div></div>' +
-      '<div class="group"><h3 style="font-size:var(--fs-lg)">En el mapa (' + list.length + ')</h3>' + (list.length ? shopList(list) : '<p class="empty">No hay comercios de este rubro todavía.</p>') + '</div></div>';
+      '<div class="group"><h3 style="font-size:var(--fs-lg)">Comercios en el mapa (' + list.length + ')</h3>' + (list.length ? shopList(list) : '<p class="empty">Todavía no hay comercios amigos de este rubro. Estamos sumando más.</p>') + '</div></div>';
   };
   function benefitResults() {
     const q = S.q.trim().toLowerCase();
     const list = byDist(active().filter((s) => (S.cat === 'todas' || s.cat === S.cat) && (!q || (s.name + ' ' + s.rubro + ' ' + s.ben).toLowerCase().includes(q))));
     return '<p class="sr-only" aria-live="polite">' + list.length + ' resultados</p>' + (list.length ? shopList(list) :
-      '<div class="empty">' + ic('search') + '<span>No encontramos comercios amigos para “' + esc(S.q) + '”.</span><button type="button" class="link-btn" data-action="clearq">Borrar búsqueda</button></div>');
+      '<div class="empty">' + ic('search') + '<span>No hay comercios amigos que coincidan con “' + esc(S.q) + '”. Probá con un rubro, como “café”.</span><button type="button" class="link-btn" data-action="clearq">Borrar búsqueda</button></div>');
   }
   V.beneficios = function () {
     return '<div class="pad"><h2 class="screen-title" tabindex="-1">Beneficios cerca tuyo</h2>' +
-      '<div class="field search-field"><label for="q" class="sr-only">Buscar un local o rubro</label>' + ic('search') + '<input id="q" type="search" placeholder="Buscar un local o rubro" value="' + esc(S.q) + '" autocomplete="off"></div>' + chipRow() +
+      '<div class="field search-field"><label for="q" class="sr-only">Buscar un local o rubro</label>' + ic('search') + '<input id="q" type="search" placeholder="Buscá por nombre o rubro" value="' + esc(S.q) + '" autocomplete="off"></div>' + chipRow() +
       '<div id="benefitList">' + benefitResults() + '</div></div>';
   };
   V.pase = function () {
@@ -813,9 +813,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     return '<div class="pad"><h2 class="screen-title" tabindex="-1">Mi pase</h2><div class="pass"><div class="brandline"><span class="logo-mark" aria-hidden="true">N</span>Pase Vecino Nexia</div>' +
       '<div class="who">' + esc(S.vecino.nombres) + '</div><div class="qr-box">' + qr('https://barrio.teamnexia.com/pase/' + id.toLowerCase(), 'Código QR del pase ' + id) + '</div>' +
       '<dl><dt>Dirección</dt><dd>' + esc(S.vecino.dir) + '</dd><dt>Se mudaron</dt><dd>' + fmtDate(S.vecino.mudanza) + '</dd><dt>Válido hasta</dt><dd>' + fmtDate(S.vecino.mudanza, 90) + '</dd><dt>N.º de pase</dt><dd class="mono">' + id + '</dd></dl></div>' +
-      '<p class="lead">Mostrá este pase en cualquier comercio amigo. El local lo escanea y registra tu beneficio. Subí el brillo de la pantalla si no lo lee.</p>' +
-      '<div class="group"><h3 style="font-size:var(--fs-lg)">Ya usaste (' + usedList.length + ')</h3>' +
-      (usedList.length ? shopList(usedList) : '<p class="empty">Todavía no usaste ningún beneficio.</p>') + '</div></div>';
+      '<p class="lead">Mostralo en la caja de cualquier comercio amigo y te aplican el beneficio. Si no lo toman, subí el brillo de la pantalla.</p>' +
+      '<div class="group"><h3 style="font-size:var(--fs-lg)">Beneficios que ya usaste (' + usedList.length + ')</h3>' +
+      (usedList.length ? shopList(usedList) : '<p class="empty">Todavía no usaste ninguno. Empezá por el más cercano.</p>') + '</div></div>';
   };
 
   function sheetHTML() {
@@ -825,18 +825,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
       const code = codeFor(s.name) + '-' + (slug(S.vecino.nombres).replace(/-/g, '').slice(0, 2).toUpperCase() || 'VN') + '26';
       return '<div class="sheet-backdrop" data-action="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">' +
         head('Tu cupón', esc(s.name), '<button type="button" class="icon-btn" data-action="uncoupon" aria-label="Volver a la ficha">' + ic('back') + '</button>') +
-        '<div class="coupon"><span class="pill benefit">' + esc(s.ben) + '</span><div class="qr-box">' + qr('https://barrio.teamnexia.com/c/' + code.toLowerCase(), 'Código QR del cupón ' + code) + '</div><div class="code">' + code + '</div><p style="font-size:var(--fs-sm);color:var(--muted)">Mostrale esta pantalla a quien te atienda. Válido hasta el ' + fmtDate(S.vecino.mudanza, 90) + '.</p></div>' +
-        (S.used.has(s.id) ? '<p class="status-chip">' + ic('check') + 'Registrado como usado</p>' : '<button type="button" class="btn primary block" data-action="markused" data-id="' + s.id + '">' + ic('check') + 'El local ya me lo aplicó</button>') + '</div>';
+        '<div class="coupon"><span class="pill benefit">' + esc(s.ben) + '</span><div class="qr-box">' + qr('https://barrio.teamnexia.com/c/' + code.toLowerCase(), 'Código QR del cupón ' + code) + '</div><div class="code">' + code + '</div><p style="font-size:var(--fs-sm);color:var(--muted)">Mostrale esta pantalla a quien te atienda. Vale hasta el ' + fmtDate(S.vecino.mudanza, 90) + '.</p></div>' +
+        (S.used.has(s.id) ? '<p class="status-chip">' + ic('check') + 'Beneficio usado</p>' : '<button type="button" class="btn primary block" data-action="markused" data-id="' + s.id + '">' + ic('check') + 'Listo, ya me lo aplicaron</button>') + '</div>';
     }
     return '<div class="sheet-backdrop" data-action="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">' +
       head(esc(s.name), esc(s.rubro) + ' · Comercio Amigo', catDot(s.cat, 48)) +
-      '<div class="benefit-box"><small>Beneficio para vecinos nuevos</small><div class="big">' + esc(s.ben) + '</div>' + (s.det ? '<p>' + esc(s.det) + '</p>' : '') + '<small>Una vez por pase · hasta el ' + fmtDate(S.vecino.mudanza, 90) + '</small></div>' +
+      '<div class="benefit-box"><small>Tu beneficio de vecino nuevo</small><div class="big">' + esc(s.ben) + '</div>' + (s.det ? '<p>' + esc(s.det) + '</p>' : '') + '<small>Vale una vez, hasta el ' + fmtDate(S.vecino.mudanza, 90) + '</small></div>' +
       '<dl class="facts">' +
       '<div class="fact">' + ic('walk') + '<div><dt>Distancia</dt><dd>A ' + cuadrasTxt(s) + ' de tu casa · ' + minutos(s) + ' min caminando</dd></div></div>' +
       '<div class="fact">' + ic('pin') + '<div><dt>Dirección</dt><dd>' + esc(s.addr) + '</dd></div></div>' +
       '<div class="fact">' + ic('clock') + '<div><dt>Horario</dt><dd>' + esc(s.hours) + '</dd></div></div>' +
       '<div class="fact">' + ic('phone') + '<div><dt>WhatsApp</dt><dd class="mono" id="shop-tel">' + esc(s.tel) + '</dd></div></div></dl>' +
-      '<div class="btn-row">' + (S.used.has(s.id) ? '<p class="status-chip">' + ic('check') + 'Ya lo usaste</p>' : '<button type="button" class="btn accent" data-action="coupon">' + ic('ticket') + 'Usar beneficio</button>') +
+      '<div class="btn-row">' + (S.used.has(s.id) ? '<p class="status-chip">' + ic('check') + 'Ya lo usaste</p>' : '<button type="button" class="btn accent" data-action="coupon">' + ic('ticket') + 'Usar mi beneficio</button>') +
       '<a class="btn ghost" href="https://www.google.com/maps/search/' + encodeURIComponent(s.addr) + '" target="_blank" rel="noopener">' + ic('map') + 'Cómo llegar<span class="sr-only"> (se abre en otra pestaña)</span></a></div>' +
       '<button type="button" class="btn ghost small" data-action="copy" data-target="shop-tel">' + ic('copy') + 'Copiar WhatsApp</button></div>';
   }
@@ -857,9 +857,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     const stepper = '<nav class="stepper" aria-label="Progreso del alta"><ol>' + STEPS.map((t, i) => '<li class="' + (i + 1 < o.step ? 'done' : i + 1 === o.step ? 'now' : '') + '"' + (i + 1 === o.step ? ' aria-current="step"' : '') + '>' + t + '</li>').join('') + '</ol></nav>';
     let body = '';
     if (o.step === 1) {
-      body = '<div class="group"><div class="label">Paso 1 de 4</div><h2 class="screen-title" tabindex="-1">Sumate como Comercio Amigo</h2><p class="lead">Team Nexia te presenta a cada familia que se muda al barrio. Vos elegís un beneficio de bienvenida.</p></div>' +
+      body = '<div class="group"><div class="label">Paso 1 de 4</div><h2 class="screen-title" tabindex="-1">Sumate como Comercio Amigo</h2><p class="lead">Cada familia que se muda con Team Nexia va a encontrar tu local en su mapa del barrio. Vos solo elegís cómo darle la bienvenida.</p></div>' +
         '<div class="card">' +
-        '<div class="field"><label for="ob-nombre">Nombre del local</label><input id="ob-nombre" data-bind="nombre" value="' + esc(o.nombre) + '" required aria-describedby="ob-nombre-err" autocomplete="organization"><p class="error" id="ob-nombre-err" hidden>' + ic('alert') + 'Escribí el nombre del local.</p></div>' +
+        '<div class="field"><label for="ob-nombre">Nombre del local</label><input id="ob-nombre" data-bind="nombre" value="' + esc(o.nombre) + '" required aria-describedby="ob-nombre-err" autocomplete="organization"><p class="error" id="ob-nombre-err" hidden>' + ic('alert') + 'Escribí el nombre del local para seguir.</p></div>' +
         '<div class="field"><label for="ob-rubro">Rubro</label><select id="ob-rubro" data-bind="rubro">' + Object.keys(CATS).map((c) => '<option value="' + c + '"' + (o.rubro === c ? ' selected' : '') + '>' + CATS[c].label + '</option>').join('') + '</select></div>' +
         field('ob-dir', 'Dirección', 'dir', o.dir, ' autocomplete="street-address"') +
         '<div class="two">' + field('ob-wpp', 'WhatsApp', 'wpp', o.wpp, ' type="tel" inputmode="tel" autocomplete="tel"') + field('ob-hor', 'Horario', 'horario', o.horario) + '</div></div>' +
@@ -867,29 +867,29 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     } else if (o.step === 2) {
       const opt = (v, t, d) => '<label class="opt"><input type="radio" name="ob-tipo" data-bind="tipo" value="' + v + '"' + (o.tipo === v ? ' checked' : '') + '><span><b>' + t + '</b><span>' + d + '</span></span></label>';
       let detail = '';
-      if (o.tipo === 'pct') detail = '<div class="field"><label for="ob-pct">Porcentaje de descuento</label><input id="ob-pct" type="number" inputmode="numeric" min="5" max="50" data-bind="pct" value="' + esc(o.pct) + '" aria-describedby="ob-pct-h"><span class="hint" id="ob-pct-h">Entre 10% y 20% es lo que mejor funciona.</span></div>';
+      if (o.tipo === 'pct') detail = '<div class="field"><label for="ob-pct">Porcentaje de descuento</label><input id="ob-pct" type="number" inputmode="numeric" min="5" max="50" data-bind="pct" value="' + esc(o.pct) + '" aria-describedby="ob-pct-h"><span class="hint" id="ob-pct-h">Recomendado: entre 10% y 20%.</span></div>';
       else if (o.tipo === 'regalo') detail = field('ob-regalo', '¿Qué regalás?', 'regalo', o.regalo);
       else if (o.tipo === 'otro') detail = field('ob-otro', 'Describí el beneficio', 'otro', o.otro, ' placeholder="Ej.: envío sin cargo el primer mes"');
-      body = '<div class="group"><div class="label">Paso 2 de 4</div><h2 class="screen-title" tabindex="-1">¿Qué le das al vecino nuevo?</h2></div>' +
-        '<fieldset><legend>Tipo de beneficio</legend><div class="opt-grid">' + opt('pct', 'Descuento en la primera compra', 'El más elegido por los locales.') + opt('regalo', 'Regalo de bienvenida', 'Algo chico para la casa nueva.') + opt('2x1', '2x1 la primera semana', 'Ideal para cafés y comida.') + opt('otro', 'Otro beneficio', 'Lo escribís vos.') + '</div></fieldset>' +
+      body = '<div class="group"><div class="label">Paso 2 de 4</div><h2 class="screen-title" tabindex="-1">¿Cómo le das la bienvenida al vecino nuevo?</h2></div>' +
+        '<fieldset><legend>Tipo de beneficio</legend><div class="opt-grid">' + opt('pct', 'Descuento en la primera compra', 'Simple de aplicar en la caja.') + opt('regalo', 'Regalo de bienvenida', 'Algo chico para la casa nueva.') + opt('2x1', '2x1 la primera semana', 'Ideal para cafés y comida.') + opt('otro', 'Otro beneficio', 'Lo escribís vos.') + '</div></fieldset>' +
         '<div class="card">' + (detail || '') +
         '<div class="field"><label for="ob-val">Válido por</label><select id="ob-val" data-bind="validez">' + [30, 60, 90].map((d) => '<option value="' + d + '"' + (+o.validez === d ? ' selected' : '') + '>' + d + ' días desde la mudanza</option>').join('') + '</select></div></div>' +
         '<div class="group"><div class="label">Así lo ve el vecino</div><ul class="list" aria-label="Vista previa"><li><div class="row">' + catDot(o.rubro) + '<span class="body"><span class="name" id="pv-name">' + esc(o.nombre) + '</span><span class="benefit-line" id="pv-ben">' + esc(benefitText()) + '</span><span class="meta">' + esc(o.dir) + '</span></span><span class="dist"><b>2</b>cuadras</span></div></li></ul></div>' +
         '<div class="btn-row"><button type="button" class="btn ghost" data-action="obback">Atrás</button><button type="button" class="btn primary" data-action="obnext">Siguiente</button></div>';
     } else if (o.step === 3) {
       const ag = agentOfName(o.nombre);
-      body = '<div class="group"><div class="label">Paso 3 de 4</div><h2 class="screen-title" tabindex="-1">Conocé a tu agente</h2><p class="lead">' + esc(ag.name) + ' es tu contacto en Team Nexia. Cuando un cliente se esté por mudar, vender o alquilar, le escribe directo desde el cartel de tu caja.</p></div>' +
+      body = '<div class="group"><div class="label">Paso 3 de 4</div><h2 class="screen-title" tabindex="-1">Conocé a tu agente</h2><p class="lead">' + esc(ag.name) + ' va a ser tu contacto en Team Nexia. Si un cliente se está por mudar, vender o alquilar, le escribe directo desde el cartel de tu caja, y ese contacto cuenta como tuyo.</p></div>' +
         '<div class="card"><div class="contact-card"><span class="avatar" aria-hidden="true">' + initials(ag.name) + '</span><span class="body"><b>' + esc(ag.name) + ' · Team Nexia</b><span>Agente de ' + esc(o.nombre) + ' · zona ' + esc(ag.zona) + '</span><span class="mono" id="nx-contact">' + ag.tel + '</span></span></div>' +
         '<button type="button" class="btn ghost small" data-action="copy" data-target="nx-contact">' + ic('copy') + 'Copiar teléfono de ' + esc(ag.short) + '</button></div>' +
-        '<fieldset class="card"><legend style="font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700">Tus compromisos</legend>' +
+        '<fieldset class="card"><legend style="font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700">Para terminar, confirmá</legend>' +
         '<label class="check"><input type="checkbox" data-bind="agenda"' + (o.agenda ? ' checked' : '') + ' aria-describedby="ob3-err"><span>Guardé a ' + esc(ag.short) + ' en mis contactos de WhatsApp. <span style="color:var(--muted)">(obligatorio)</span></span></label>' +
         '<label class="check"><input type="checkbox" data-bind="cartel"' + (o.cartel ? ' checked' : '') + ' aria-describedby="ob3-err"><span>Pongo el cartel con el QR de ' + esc(ag.short) + ' cerca de la caja. <span style="color:var(--muted)">(obligatorio)</span></span></label>' +
         '<label class="check"><input type="checkbox" data-bind="codigo"' + (o.codigo ? ' checked' : '') + '><span>Si un cliente me pregunta por una inmobiliaria, le paso mi código de comercio amigo.</span></label>' +
         '<label class="check"><input type="checkbox" data-bind="reporte"' + (o.reporte ? ' checked' : '') + '><span>Quiero recibir el reporte mensual de vecinos que me mandó Nexia.</span></label>' +
-        '<p id="ob3-err" class="error" hidden>' + ic('alert') + 'Marcá los dos compromisos obligatorios para terminar.</p></fieldset>' +
-        '<div class="btn-row"><button type="button" class="btn ghost" data-action="obback">Atrás</button><button type="button" class="btn primary" data-action="obnext">Terminar alta</button></div>';
+        '<p id="ob3-err" class="error" hidden>' + ic('alert') + 'Marcá las dos opciones obligatorias para sumarte.</p></fieldset>' +
+        '<div class="btn-row"><button type="button" class="btn ghost" data-action="obback">Atrás</button><button type="button" class="btn primary" data-action="obnext">Sumarme</button></div>';
     } else {
-      body = '<div class="group"><div class="label">Alta completa</div><h2 class="screen-title" tabindex="-1">¡' + esc(o.nombre) + ' ya es Comercio Amigo!</h2><p class="lead">Team Nexia revisa la ficha y en 24 h aparecés en el mapa. ' + esc(agentOfName(o.nombre).short) + ' te lleva impreso este cartel para la caja.</p></div>' +
+      body = '<div class="group"><div class="label">Alta completa</div><h2 class="screen-title" tabindex="-1">¡' + esc(o.nombre) + ' ya es Comercio Amigo!</h2><p class="lead">Revisamos tu ficha y en 24 h aparecés en el mapa del barrio. En la próxima visita, ' + esc(agentOfName(o.nombre).short) + ' te lleva este cartel impreso para la caja.</p></div>' +
         '<div class="cartel-wrap">' + cartelHTML(o.nombre, agentOfName(o.nombre), S.kitFmt) + fmtSwitch('kit', S.kitFmt) + '</div>' +
         '<div class="card"><div class="field"><label for="msg-cli">Mensaje para tus clientes</label><span class="hint">Para tu estado o lista de difusión de WhatsApp.</span><textarea id="msg-cli">' + esc(clientMsg(o.nombre)) + '</textarea></div><button type="button" class="btn ghost small" data-action="copy" data-target="msg-cli">' + ic('copy') + 'Copiar mensaje</button></div>' +
         '<button type="button" class="btn primary block" data-action="tab" data-tab="panel">Ver mi panel</button><button type="button" class="link-btn" data-action="obreset" style="justify-self:center">Hacer otra alta de ejemplo</button>';
@@ -897,7 +897,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     return '<div class="pad">' + stepper + body + '</div>';
   };
   function clientMsg(name) {
-    return '¿Te estás por mudar, vender o alquilar? En ' + name + ' somos Comercio Amigo de Team Nexia. Escribiles con nuestro código ' + codeFor(name) + ' y te atienden con prioridad: ' + shopLink(name);
+    return '¿Te mudás, vendés o alquilás? En ' + name + ' trabajamos con Team Nexia, la inmobiliaria del barrio. Escribiles desde este link y te atienden de parte nuestra: ' + shopLink(name);
   }
   function stickerHTML(name) {
     return '<div class="sticker"><div><div class="k">Comercio Amigo</div><h4>¿Te mudás, vendés o alquilás?</h4><p>Escaneá y Team Nexia te contacta hoy.</p><span class="code">' + codeFor(name) + '</span></div><div class="qr-box">' + qr(shopLink(name), 'Código QR de referidos de ' + name) + '</div></div>';
@@ -905,13 +905,13 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
   C.kit = function () {
     const name = S.ob.done ? S.ob.nombre : 'Panadería La Espiga';
     const ag = agentOfName(name);
-    return '<div class="pad"><div class="group"><h2 class="screen-title" tabindex="-1">Tu kit de Comercio Amigo</h2><p class="lead">Todo lo que necesitás para que tus clientes lleguen a Team Nexia con tu código.</p></div>' +
-      '<div class="group"><h3 style="font-size:var(--fs-lg)">Cartel de caja</h3><p class="lead">Va al lado de la caja o del posnet. El cliente lo escanea mientras paga y le escribe a ' + esc(ag.short) + ' con un mensaje que ya dice que viene de tu local.</p>' +
+    return '<div class="pad"><div class="group"><h2 class="screen-title" tabindex="-1">Tu kit de Comercio Amigo</h2><p class="lead">Lo que te dejamos para que tus clientes lleguen a Team Nexia de tu parte.</p></div>' +
+      '<div class="group"><h3 style="font-size:var(--fs-lg)">Cartel de caja</h3><p class="lead">Va al lado de la caja o del posnet. Mientras paga, el cliente lo escanea y le escribe a ' + esc(ag.short) + '. El mensaje ya dice que viene de tu local.</p>' +
       '<div class="cartel-wrap">' + cartelHTML(name, ag, S.kitFmt) + fmtSwitch('kit', S.kitFmt) + '</div></div>' +
       '<div class="group"><h3 style="font-size:var(--fs-lg)">Calco de vitrina</h3>' + stickerHTML(name) + '</div>' +
       '<div class="card"><h3>Frase para el mostrador</h3><p id="frase">“¿Se están por mudar o vender? Escaneá el QR de acá al lado y te atiende ' + esc(ag.short) + ', de Team Nexia.”</p><button type="button" class="btn ghost small" data-action="copy" data-target="frase">' + ic('copy') + 'Copiar frase</button></div>' +
       '<div class="card"><div class="field"><label for="msg-kit">Mensaje para WhatsApp</label><textarea id="msg-kit">' + esc(clientMsg(name)) + '</textarea></div><button type="button" class="btn ghost small" data-action="copy" data-target="msg-kit">' + ic('copy') + 'Copiar mensaje</button></div>' +
-      '<div class="card"><h3>Cuando llega un vecino con pase</h3><ol style="margin:0;padding-left:20px;font-size:var(--fs-sm);display:grid;gap:6px"><li>Escaneás el QR del pase o del cupón.</li><li>Aplicás el beneficio.</li><li>Queda registrado en tu panel y en el reporte del mes.</li></ol></div></div>';
+      '<div class="card"><h3>Cuando llega un vecino con su pase</h3><ol style="margin:0;padding-left:20px;font-size:var(--fs-sm);display:grid;gap:6px"><li>Escaneá el QR del pase o del cupón.</li><li>Aplicale el beneficio.</li><li>Lo vas a ver en tu panel y en el reporte del mes.</li></ol></div></div>';
   };
   C.panel = function () {
     const s = shops.find((x) => x.id === 'espiga');
@@ -921,18 +921,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     const pill = (st) => st === 'Operación concretada' ? 'ok' : st === 'Nuevo' ? 'warn' : 'neutral';
     const tierRow = (letter, title, desc, reached, prog) => '<li class="tier' + (reached ? ' reached' : '') + '"><span class="medal" aria-hidden="true">' + letter + '</span><span><b>' + title + '</b><span class="d">' + desc + '</span></span>' + (reached ? '<span class="pill ok">' + ic('check') + 'Logrado</span>' : '<span class="pill neutral">' + prog + '</span>') + '</li>';
     return '<div class="pad"><div class="group"><div class="label">' + esc(name) + '</div><h2 class="screen-title" tabindex="-1">Tu panel de octubre</h2></div>' +
-      '<div class="stats"><div class="stat"><b>' + s.sent + '</b><span>vecinos nuevos te mandamos</span></div><div class="stat"><b>' + s.used + '</b><span>usaron tu beneficio</span></div><div class="stat"><b>' + refs + '</b><span>contactos que nos referiste</span></div></div>' +
+      '<div class="stats"><div class="stat"><b>' + s.sent + '</b><span>vecinos nuevos te recomendamos</span></div><div class="stat"><b>' + s.used + '</b><span>usaron tu beneficio</span></div><div class="stat"><b>' + refs + '</b><span>clientes que nos mandaste</span></div></div>' +
       '<div class="card"><h3>Tu nivel: ' + tier + '</h3><ul class="tiers">' +
       tierRow('A', 'Amigo', 'Ficha en el mapa y calco de vitrina', true, '') +
       tierRow('S', 'Socio · 3 referidos', 'Destacado en tu rubro y posteo en redes de Nexia', refs >= 3, refs + ' de 3') +
       tierRow('E', 'Embajador · 1 operación', 'Placa, canasta de agradecimiento y lugar en la tarjeta de llaves', ops >= 1, '0 de 1') + '</ul></div>' +
-      (S.refForm ? '<form class="card" id="refCard" novalidate><h3 id="refTitle">Referir a alguien</h3>' +
-        '<div class="field"><label for="rf-name">Nombre</label><input id="rf-name" autocomplete="off" placeholder="Ej.: Carla Méndez" aria-describedby="rf-err" required><p id="rf-err" class="error" hidden>' + ic('alert') + 'Escribí al menos el nombre.</p></div>' +
+      (S.refForm ? '<form class="card" id="refCard" novalidate><h3 id="refTitle">Recomendar a alguien</h3>' +
+        '<div class="field"><label for="rf-name">Nombre</label><input id="rf-name" autocomplete="off" placeholder="Ej.: Carla Méndez" aria-describedby="rf-err" required><p id="rf-err" class="error" hidden>' + ic('alert') + 'Escribí el nombre para poder enviarlo.</p></div>' +
         '<div class="field"><label for="rf-tel">Teléfono</label><input id="rf-tel" type="tel" inputmode="tel" placeholder="11 5555-0000"></div>' +
         '<div class="field"><label for="rf-need">Qué necesita</label><select id="rf-need"><option>Vender</option><option>Alquilar</option><option>Comprar</option><option>Tasar</option></select></div>' +
         '<div class="btn-row"><button type="button" class="btn ghost" data-action="refcancel">Cancelar</button><button type="submit" class="btn primary">Enviar a Team Nexia</button></div></form>'
-        : '<button type="button" class="btn accent block" data-action="refopen">' + ic('plus') + 'Referir a alguien</button>') +
-      '<div class="group"><h3 style="font-size:var(--fs-lg)">Tus referidos</h3><ul class="list">' + S.myRefs.map((r) => '<li><div class="row"><span class="avatar sm" aria-hidden="true">' + esc(r.name.split(' ').map((w) => w[0]).join('').slice(0, 2)) + '</span><span class="body"><span class="name">' + esc(r.name) + '</span><span class="meta">' + esc(r.need) + ' · ' + esc(r.when) + '</span><span><span class="pill ' + pill(r.status) + '">' + esc(r.status) + '</span></span></span></div></li>').join('') + '</ul></div></div>';
+        : '<button type="button" class="btn accent block" data-action="refopen">' + ic('plus') + 'Recomendar a alguien</button>') +
+      '<div class="group"><h3 style="font-size:var(--fs-lg)">Las personas que nos mandaste</h3><ul class="list">' + S.myRefs.map((r) => '<li><div class="row"><span class="avatar sm" aria-hidden="true">' + esc(r.name.split(' ').map((w) => w[0]).join('').slice(0, 2)) + '</span><span class="body"><span class="name">' + esc(r.name) + '</span><span class="meta">' + esc(r.need) + ' · ' + esc(r.when) + '</span><span><span class="pill ' + pill(r.status) + '">' + esc(r.status) + '</span></span></span></div></li>').join('') + '</ul></div></div>';
   };
 
   // ---------- vistas: Team Nexia ----------
@@ -946,29 +946,29 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     return '<div class="pad"><div class="group"><div class="label">Team Nexia</div><h2 class="screen-title" tabindex="-1">Catálogo del barrio</h2></div>' +
       '<div class="stats"><div class="stat"><b>' + counts.activo + '</b><span>activos</span></div><div class="stat"><b>' + counts.pendiente + '</b><span>para revisar</span></div><div class="stat"><b>' + counts.invitado + '</b><span>invitados</span></div></div>' +
       (pend.length ? '<div class="group"><h3 style="font-size:var(--fs-lg)">Para revisar</h3><ul class="list">' + pend.map(row).join('') + '</ul></div>' : '') +
-      '<div class="card"><h3>Invitar un comercio</h3><p class="sub">Generá el link de alta y mandalo después de la visita.</p><div class="field"><label for="inv-name">Nombre del local</label><input id="inv-name" value="' + esc(S.invite.nombre) + '"></div>' +
+      '<div class="card"><h3>Invitar un comercio</h3><p class="sub">Después de la visita, mandale al local su link para sumarse.</p><div class="field"><label for="inv-name">Nombre del local</label><input id="inv-name" value="' + esc(S.invite.nombre) + '"></div>' +
       '<div class="share-row"><div class="qr-box sm" id="inv-qr">' + qr(inviteLink(S.invite.nombre), 'Código QR de alta') + '</div><div class="stack"><span class="linktext" id="inv-link">' + esc(inviteLink(S.invite.nombre)) + '</span><button type="button" class="btn ghost small" data-action="copy" data-target="inv-link">' + ic('copy') + 'Copiar link</button></div></div>' +
       '<div class="field"><label for="inv-msg">Mensaje de invitación</label><textarea id="inv-msg">' + esc(inviteMsg(S.invite.nombre)) + '</textarea></div><button type="button" class="btn primary small" data-action="copy" data-target="inv-msg">' + ic('copy') + 'Copiar invitación</button></div>' +
       '<div class="group"><h3 style="font-size:var(--fs-lg)">Todos los comercios</h3><ul class="list">' + rest.map(row).join('') + '</ul></div></div>';
   };
   function inviteMsg(name) {
-    return 'Hola, equipo de ' + (name || 'tu local') + '. Gracias por recibirnos. Este es el link para sumarse como Comercio Amigo de Team Nexia: ' + inviteLink(name) + ' . Son 3 minutos. Cada familia que se muda con nosotros va a ver su local y su beneficio en el mapa del barrio.';
+    return '¡Hola, equipo de ' + (name || 'tu local') + '! Gracias por recibirnos hoy. Para sumarse como Comercio Amigo de Team Nexia, completen este formulario (son 3 minutos): ' + inviteLink(name) + ' . Desde ese día, cada familia que se mude al barrio con nosotros va a ver su local y su beneficio en el mapa.';
   }
   function shareMsg() {
     const sh = S.share;
-    return '¡Bienvenidos a ' + sh.dir + ', ' + sh.nombres + '! Les armamos el mapa de comercios amigos del barrio, con beneficios por ser vecinos nuevos. Es su Pase Vecino Nexia, válido hasta el ' + fmtDate(sh.fecha, 90) + ': ' + vecinoLink(sh.nombres, sh.dir);
+    return '¡Bienvenidos a su casa nueva, ' + sh.nombres + '! Para que se sientan del barrio desde el primer día, les armamos su Pase Vecino: los comercios de la zona y el beneficio que cada uno les tiene preparado. Vale hasta el ' + fmtDate(sh.fecha, 90) + ': ' + vecinoLink(sh.nombres, sh.dir);
   }
   N.compartir = function () {
     const sh = S.share, link = vecinoLink(sh.nombres, sh.dir);
     return '<div class="pad"><div class="group"><div class="label">Team Nexia</div><h2 class="screen-title" tabindex="-1">Compartir el catálogo</h2></div>' +
-      '<div class="card"><h3>Pase para un vecino nuevo</h3><p class="sub">Se manda el día de la entrega de llaves.</p>' +
+      '<div class="card"><h3>Pase para un vecino nuevo</h3><p class="sub">Mandalo el día de la entrega de llaves.</p>' +
       '<div class="field"><label for="sh-n">Nombres</label><input id="sh-n" data-share="nombres" value="' + esc(sh.nombres) + '"></div>' +
       '<div class="field"><label for="sh-d">Dirección nueva</label><input id="sh-d" data-share="dir" value="' + esc(sh.dir) + '" autocomplete="street-address"></div>' +
       '<div class="field"><label for="sh-f">Fecha de mudanza</label><input id="sh-f" type="date" data-share="fecha" value="' + esc(sh.fecha) + '"></div>' +
       '<div class="share-row"><div class="qr-box sm" id="sh-qr">' + qr(link, 'Código QR del pase del vecino') + '</div><div class="stack"><span class="linktext" id="sh-link">' + esc(link) + '</span><button type="button" class="btn ghost small" data-action="copy" data-target="sh-link">' + ic('copy') + 'Copiar link</button></div></div>' +
       '<div class="field"><label for="sh-msg">Mensaje de WhatsApp</label><textarea id="sh-msg">' + esc(shareMsg()) + '</textarea></div>' +
       '<div class="btn-row"><button type="button" class="btn primary" data-action="copy" data-target="sh-msg">' + ic('copy') + 'Copiar mensaje</button><button type="button" class="btn ghost" data-action="preview">' + ic('eye') + 'Ver como vecino</button></div></div>' +
-      '<div class="card"><h3>Tarjeta para el llavero</h3><p class="sub">Se imprime y va con las llaves.</p><div class="sticker"><div><div class="k">' + ic('key') + 'Bienvenidos</div><h4 id="key-name">' + esc(sh.nombres) + '</h4><p>Escaneen y conozcan los comercios amigos de su barrio nuevo.</p></div><div class="qr-box" id="key-qr">' + qr(link, 'Código QR de la tarjeta') + '</div></div></div>' +
+      '<div class="card"><h3>Tarjeta para el llavero</h3><p class="sub">Imprimila y entregala junto con las llaves.</p><div class="sticker"><div><div class="k">' + ic('key') + 'Bienvenidos</div><h4 id="key-name">' + esc(sh.nombres) + '</h4><p>Escaneen y conozcan a sus vecinos comerciantes.</p></div><div class="qr-box" id="key-qr">' + qr(link, 'Código QR de la tarjeta') + '</div></div></div>' +
       '<div class="card"><h3>Catálogo abierto</h3><p class="sub">Para carteles de “Vendido” y “Alquilado”, la bio de Instagram y las visitas.</p><div class="share-row"><div class="qr-box sm">' + qr('https://barrio.teamnexia.com/catalogo', 'Código QR del catálogo abierto') + '</div><div class="stack"><span class="linktext" id="cat-link">https://barrio.teamnexia.com/catalogo</span><button type="button" class="btn ghost small" data-action="copy" data-target="cat-link">' + ic('copy') + 'Copiar link</button></div></div></div></div>';
   };
   N.agentes = function () {
@@ -980,7 +980,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
         '<div class="mini-stats"><span class="pill neutral">' + mine.length + ' comercios</span><span class="pill ok">' + leads + ' contactos por QR</span></div>' +
         '<button type="button" class="btn ghost small" data-action="copy" data-target="ag-link-' + a.id + '">' + ic('copy') + 'Copiar link de ' + esc(a.short) + '</button></li>';
     }).join('');
-    return '<div class="pad"><div class="group"><div class="label">Team Nexia</div><h2 class="screen-title" tabindex="-1">Agentes y carteles</h2><p class="lead">Cada agente tiene su QR. El cartel de cada local suma el código del comercio para saber de dónde vino el contacto.</p></div>' +
+    return '<div class="pad"><div class="group"><div class="label">Team Nexia</div><h2 class="screen-title" tabindex="-1">Agentes y carteles</h2><p class="lead">Cada agente tiene su QR. El cartel de cada local le agrega el código del comercio, así sabés de dónde vino cada contacto.</p></div>' +
       '<ul class="group" style="list-style:none;margin:0;padding:0">' + cards + '</ul>' +
       '<div class="card"><h3>Armar cartel de caja</h3>' +
       '<div class="two"><div class="field"><label for="b-shop">Comercio</label><select id="b-shop">' + shops.filter((s) => s.status !== 'invitado').map((s) => '<option value="' + s.id + '"' + (s.id === shop.id ? ' selected' : '') + '>' + esc(s.name) + '</option>').join('') + '</select></div>' +
@@ -999,7 +999,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
       '<div class="stats"><div class="stat"><b>' + tot.refs + '</b><span>contactos referidos</span></div><div class="stat"><b>' + tot.ops + '</b><span>operaciones</span></div><div class="stat"><b>' + tot.used + '</b><span>cupones usados</span></div></div>' +
       '<div class="card"><div class="table-wrap"><table class="tbl"><caption>Ranking de locales</caption><thead><tr><th scope="col">Local</th><th scope="col" class="num">Referidos</th><th scope="col" class="num">Oper.</th><th scope="col">Nivel</th></tr></thead><tbody>' +
       rows.map((s) => '<tr><th scope="row" style="font-weight:600;font-size:var(--fs-sm);color:var(--ink);border-bottom:1px solid var(--line)">' + esc(s.name) + '</th><td class="num">' + s.refs + '</td><td class="num">' + s.ops + '</td><td><span class="pill ' + (tier(s) === 'Amigo' ? 'neutral' : 'ok') + '">' + tier(s) + '</span></td></tr>').join('') + '</tbody></table></div></div>' +
-      '<div class="group"><h3 style="font-size:var(--fs-lg)">Últimos contactos</h3><ul class="list">' + LEADS.map((l) => '<li><div class="row"><span class="body"><span class="name">' + esc(l.name) + '</span><span class="meta">' + esc(l.need) + ' · ' + esc(l.when) + ' · para ' + esc(agentById(l.agent).short) + '</span></span><span class="pill neutral mono" aria-label="Código del local ' + esc(l.from) + '">' + esc(l.from) + '</span></div></li>').join('') + '</ul><p class="lead">Responder en menos de 2 h hábiles y avisarle al local que su contacto llegó.</p></div></div>';
+      '<div class="group"><h3 style="font-size:var(--fs-lg)">Últimos contactos</h3><ul class="list">' + LEADS.map((l) => '<li><div class="row"><span class="body"><span class="name">' + esc(l.name) + '</span><span class="meta">' + esc(l.need) + ' · ' + esc(l.when) + ' · para ' + esc(agentById(l.agent).short) + '</span></span><span class="pill neutral mono" aria-label="Código del local ' + esc(l.from) + '">' + esc(l.from) + '</span></div></li>').join('') + '</ul><p class="lead">Meta: responder en menos de 2 horas hábiles y avisarle al local que su contacto llegó.</p></div></div>';
   };
 
   // ---------- navegación ----------
@@ -1010,9 +1010,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
   };
   const VIEWS = { vecino: V, comercio: C, nexia: N };
   const HINTS = {
-    vecino: 'Lo que ve la familia que se muda cuando abre su link: mapa, beneficios y su pase.',
-    comercio: 'Lo que ve el local: alta en 4 pasos, su cartel de caja con el QR del agente y su panel de referidos.',
-    nexia: 'Lo que ve Team Nexia: catálogo, agentes con su QR y cartel de caja, links para compartir y referidos.'
+    vecino: 'Así la ve la familia que se muda: su barrio, sus beneficios y su pase.',
+    comercio: 'Así la ve el local: se suma en 4 pasos, recibe su cartel de caja y sigue sus resultados.',
+    nexia: 'Así la ve Team Nexia: comercios, agentes y carteles, links para compartir y referidos.'
   };
 
   // render(opts): keep = mantener scroll; focus = mover el foco al título de la pantalla
@@ -1066,7 +1066,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     else if (a === 'close') closeSheet();
     else if (a === 'coupon') { S.coupon = true; renderSheet(); }
     else if (a === 'uncoupon') { S.coupon = false; renderSheet(); }
-    else if (a === 'markused') { S.used.add(el.dataset.id); const s = shops.find((x) => x.id === el.dataset.id); if (s) s.used++; render({ keep: true }); toast('Beneficio registrado'); }
+    else if (a === 'markused') { S.used.add(el.dataset.id); const s = shops.find((x) => x.id === el.dataset.id); if (s) s.used++; render({ keep: true }); toast('¡Listo! Lo marcamos como usado'); }
     else if (a === 'copy') copyFrom(el.dataset.target);
     else if (a === 'fmt') {
       if (el.dataset.scope === 'kit') S.kitFmt = el.dataset.fmt; else S.builder.fmt = el.dataset.fmt;
@@ -1079,7 +1079,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
       if (S.ob.step === 3 && !(S.ob.agenda && S.ob.cartel)) { $('#ob3-err').hidden = false; const first = $('[data-bind="' + (S.ob.agenda ? 'cartel' : 'agenda') + '"]'); first.focus(); return; }
       if (S.ob.step === 3) finishOnboarding();
       S.ob.step = Math.min(4, S.ob.step + 1); render({ focus: true });
-      if (S.ob.step === 4) toast('Alta enviada a Team Nexia');
+      if (S.ob.step === 4) toast('Listo, ya sos Comercio Amigo');
     }
     else if (a === 'obback') { S.ob.step = Math.max(1, S.ob.step - 1); render({ focus: true }); }
     else if (a === 'obreset') { Object.assign(S.ob, { step: 1, done: false, agenda: false, cartel: false, codigo: false, nombre: 'Café Los Tilos', rubro: 'cafe', dir: 'Paraguay 120', tipo: '2x1' }); render({ focus: true }); }
@@ -1097,7 +1097,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     const need = $('#rf-need').value;
     S.myRefs.unshift({ name: n, need, status: 'Nuevo', when: 'recién' });
     LEADS.unshift({ name: n, need, from: codeFor(S.ob.done ? S.ob.nombre : 'Panadería La Espiga'), agent: agentOfName(S.ob.done ? S.ob.nombre : 'Panadería La Espiga').id, when: 'recién' });
-    S.refForm = false; render({ keep: true }); toast('Enviado. Team Nexia lo contacta hoy.');
+    S.refForm = false; render({ keep: true }); toast('Gracias. ' + agentOfName(S.ob.done ? S.ob.nombre : 'Panadería La Espiga').short + ' lo contacta hoy.');
     const b = $('[data-action="refopen"]'); if (b) b.focus();
   });
 
