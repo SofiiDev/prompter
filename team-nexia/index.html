@@ -1153,6 +1153,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); fon
     if (t.dataset.bind === 'rubro' || t.dataset.bind === 'tipo') { render({ keep: true }); const el = $('[data-bind="' + t.dataset.bind + '"]' + (t.type === 'radio' ? ':checked' : '')); if (el) el.focus(); }
   });
 
+  // links directos: #cartel abre el kit del comercio, #agentes la pestaña de agentes
+  const DEEP = { cartel: ['comercio', 'kit'], agentes: ['nexia', 'agentes'], alta: ['comercio', 'alta'] };
+  const deep = DEEP[(location.hash || '').slice(1)];
+  if (deep) { S.mode = deep[0]; S.tab[deep[0]] = deep[1]; }
   render();
 })();
 </script>
