@@ -10,4 +10,4 @@ La página también incluye el memo de estrategia de referidos para los locales.
 
 Datos de ejemplo: comercios, direcciones y teléfonos son ficticios. Los links `barrio.teamnexia.com` son ilustrativos.
 
-Nota: usa un script inline y `qrcode-generator` desde jsDelivr, así que la CSP de `netlify.toml` de este repo lo bloquea. Para publicarlo, abrilo como archivo local o súbelo a un sitio aparte.
+Nota: usa un script inline y `qrcode-generator` desde jsDelivr, así que la CSP de `netlify.toml` de este repo lo bloquea. Para publicarlo, abrilo como archivo local o subilo a un sitio aparte.
