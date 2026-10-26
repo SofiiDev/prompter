@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Barrio Nexia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: prototipo móvil en marco de teléfono (sticky) a la izquierda + memo de estrategia a la derecha; en celular se apilan. */
+:root {
+  --bg: #E9EEEA;
+  --surface: #FFFFFF;
+  --app-bg: #F4F7F4;
+  --ink: #10262A;
+  --muted: #5A6B6C;
+  --line: #D5DED9;
+  --brand: #0E5A61;
+  --brand-2: #0A464C;
+  --on-brand: #FFFFFF;
+  --brand-soft: #DCEDEC;
+  --accent: #E39B2D;
+  --accent-ink: #5A3507;
+  --accent-soft: #FCEBCF;
+  --ok: #2E8A4E;
+  --ok-soft: #DDF1E3;
+  --warn: #B26A00;
+  --warn-soft: #FFF0D6;
+  --frame: #0C1517;
+  --map-bg: #E3E8E3;
+  --map-block: #F7F9F6;
+  --map-park: #C7E2C4;
+  --map-label: #7A8A88;
+  --map-ring: #0E5A61;
+  --font-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1416; --surface: #142225; --app-bg: #0F1B1D; --ink: #E4EEEC; --muted: #93A6A6; --line: #253A3D;
+    --brand: #4DB3AE; --brand-2: #3A9893; --on-brand: #06191B; --brand-soft: #173638;
+    --accent: #F0B44F; --accent-ink: #2A1A02; --accent-soft: #3A2A10;
+    --ok: #5CC782; --ok-soft: #173424; --warn: #F0B44F; --warn-soft: #3A2A10;
+    --frame: #000000; --map-bg: #13211F; --map-block: #1B2C2E; --map-park: #1F3D2B; --map-label: #6F8584; --map-ring: #4DB3AE;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1416; --surface: #142225; --app-bg: #0F1B1D; --ink: #E4EEEC; --muted: #93A6A6; --line: #253A3D;
+  --brand: #4DB3AE; --brand-2: #3A9893; --on-brand: #06191B; --brand-soft: #173638;
+  --accent: #F0B44F; --accent-ink: #2A1A02; --accent-soft: #3A2A10;
+  --ok: #5CC782; --ok-soft: #173424; --warn: #F0B44F; --warn-soft: #3A2A10;
+  --frame: #000000; --map-bg: #13211F; --map-block: #1B2C2E; --map-park: #1F3D2B; --map-label: #6F8584; --map-ring: #4DB3AE;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.page { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+.masthead { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 32px; margin-bottom: 28px; }
+.masthead .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); font-weight: 700; }
+.masthead h1 { font-size: clamp(28px, 4vw, 42px); margin-top: 6px; letter-spacing: -.01em; }
+.masthead .lede { color: var(--muted); max-width: 52ch; margin-top: 8px; }
+
+.stage { display: grid; grid-template-columns: minmax(320px, 400px) minmax(0, 1fr); gap: 48px; align-items: start; }
+@media (max-width: 920px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+
+.device { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 12px; justify-items: center; }
+@media (max-width: 920px) { .device { position: static; } }
+.mode-switch { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; width: 100%; max-width: 390px; }
+.mode-switch button { flex: 1; border: 0; background: transparent; border-radius: 999px; padding: 8px 6px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.mode-switch button[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); }
+.mode-hint { font-size: 12.5px; color: var(--muted); text-align: center; max-width: 360px; }
+
+.phone { position: relative; width: 100%; max-width: 390px; height: 790px; border: 10px solid var(--frame); border-radius: 46px; background: var(--app-bg); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(8, 30, 33, .45); }
+.statusbar { display: flex; justify-content: space-between; padding: 10px 24px 4px; font-size: 12px; font-weight: 700; font-family: var(--font-display); background: var(--app-top, transparent); }
+@media (max-width: 520px) {
+  .phone { border: 1px solid var(--line); border-radius: 22px; height: min(760px, calc(100svh - 110px)); min-height: 560px; box-shadow: none; }
+  .statusbar { display: none; }
+}
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; position: relative; }
+.tabbar { display: flex; border-top: 1px solid var(--line); background: var(--surface); padding: 6px 6px 10px; }
+.tabbar button { flex: 1; border: 0; background: transparent; display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); padding: 4px 2px; border-radius: 12px; }
+.tabbar button svg { width: 22px; height: 22px; }
+.tabbar button[aria-current="page"] { color: var(--brand); }
+
+/* ---------- componentes de la app ---------- */
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.pad { padding: 16px 18px; display: grid; gap: 18px; }
+.hero { background: var(--brand); color: var(--on-brand); padding: 18px 18px 22px; display: grid; gap: 10px; }
+.hero .brandline { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .9; }
+.hero h2 { font-size: 26px; letter-spacing: -.01em; }
+.hero p { opacity: .92; font-size: 14px; }
+.logo-mark { width: 22px; height: 22px; border-radius: 7px; background: var(--on-brand); color: var(--brand); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.pill.on-brand { background: color-mix(in srgb, var(--on-brand) 18%, transparent); color: var(--on-brand); }
+.pill.benefit { background: var(--accent-soft); color: var(--accent-ink); }
+:root[data-theme="dark"] .pill.benefit { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.benefit { color: var(--accent); } }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.neutral { background: var(--brand-soft); color: var(--brand); }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; display: grid; gap: 2px; }
+.stat b { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat span { font-size: 11.5px; color: var(--muted); line-height: 1.25; }
+
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.sec-head h3 { font-size: 17px; }
+.link-btn { border: 0; background: none; color: var(--brand); font-weight: 600; font-size: 13px; padding: 0; }
+
+.hscroll { display: flex; gap: 10px; overflow-x: auto; margin-inline: -18px; padding-inline: 18px; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+.mcard { flex: 0 0 200px; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: grid; gap: 8px; text-align: left; }
+.mcard .top { display: flex; align-items: center; gap: 8px; }
+.mcard strong { font-size: 14px; line-height: 1.2; }
+.mcard small { color: var(--muted); font-size: 12px; }
+
+.cat-dot { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: #fff; flex: none; }
+.cat-dot .ic { width: 20px; height: 20px; stroke: #fff; }
+
+.list { display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; width: 100%; }
+.row:last-child { border-bottom: 0; }
+.row .body { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.row .name { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.row .meta { font-size: 12px; color: var(--muted); }
+.row .benefit-line { font-size: 13px; color: var(--accent-ink); font-weight: 600; }
+:root[data-theme="dark"] .row .benefit-line { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .row .benefit-line { color: var(--accent); } }
+.row .dist { font-size: 12px; color: var(--muted); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.row .dist b { display: block; color: var(--ink); font-size: 14px; }
+.used-tag { font-size: 11px; color: var(--ok); font-weight: 700; }
+
+.chips { display: flex; gap: 6px; overflow-x: auto; margin-inline: -18px; padding-inline: 18px; padding-bottom: 2px; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--app-bg); border-color: var(--ink); }
+
+.search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+.search input { border: 0; background: transparent; padding: 11px 0; flex: 1; min-width: 0; outline: none; }
+
+/* mapa */
+.map-wrap { position: relative; height: 100%; display: flex; flex-direction: column; }
+.map-top { padding: 12px 18px 10px; display: grid; gap: 10px; background: var(--app-bg); }
+.map-top h3 { font-size: 18px; }
+.map { flex: 1; position: relative; background: var(--map-bg); min-height: 320px; }
+.map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map .pin { cursor: pointer; transition: transform .15s; }
+.map .pin:hover circle.halo, .map .pin.sel circle.halo { opacity: .35; }
+.map-legend { position: absolute; left: 12px; bottom: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 11.5px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+.map-legend .scale { display: inline-block; width: 40px; height: 6px; border: 2px solid var(--ink); border-top: 0; }
+
+/* hoja inferior */
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(6, 20, 22, .45); z-index: 20; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; overflow-y: auto; background: var(--surface); border-radius: 22px 22px 0 0; z-index: 21; padding: 8px 18px 20px; display: grid; gap: 14px; animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+.grabber { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 4px auto 0; }
+.sheet-head { display: flex; gap: 12px; align-items: center; }
+.sheet-head h3 { font-size: 21px; }
+.sheet-head p { font-size: 13px; color: var(--muted); }
+.benefit-box { background: var(--accent-soft); border-radius: 16px; padding: 14px; display: grid; gap: 4px; }
+.benefit-box .big { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--accent-ink); line-height: 1.15; }
+:root[data-theme="dark"] .benefit-box .big { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .benefit-box .big { color: var(--accent); } }
+.benefit-box p { font-size: 13.5px; }
+.benefit-box small { font-size: 12px; color: var(--muted); }
+.facts { display: grid; gap: 10px; }
+.fact { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; }
+.fact .ic { color: var(--muted); margin-top: 1px; }
+.sel-text { user-select: all; font-family: var(--font-mono); font-size: 13px; }
+
+.btn { border: 0; border-radius: 14px; padding: 13px 16px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn.primary { background: var(--brand); color: var(--on-brand); }
+.btn.accent { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: var(--brand-soft); color: var(--brand); }
+.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1; }
+
+/* cupón y pase */
+.coupon { border: 2px dashed var(--accent); border-radius: 18px; padding: 16px; display: grid; justify-items: center; gap: 10px; text-align: center; background: var(--surface); }
+.coupon .code { font-family: var(--font-mono); font-size: 18px; font-weight: 600; letter-spacing: .06em; }
+.qr { display: block; width: 100%; height: auto; border-radius: 8px; }
+.qr-box { width: 168px; max-width: 100%; }
+.qr-box.sm { width: 112px; }
+.qr-fallback { aspect-ratio: 1; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 8px; font-size: 12px; color: var(--muted); padding: 8px; text-align: center; }
+
+.pass { background: var(--brand); color: var(--on-brand); border-radius: 22px; padding: 18px; display: grid; gap: 14px; position: relative; overflow: hidden; }
+.pass::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; border: 22px solid color-mix(in srgb, var(--on-brand) 10%, transparent); }
+.pass .who { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.pass .qr-holder { background: #fff; border-radius: 16px; padding: 12px; justify-self: center; width: 180px; max-width: 100%; }
+.pass dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.pass dt { opacity: .75; }
+.pass dd { margin: 0; font-weight: 600; text-align: right; }
+
+/* formularios */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; }
+.card h3 { font-size: 17px; }
+.card .sub { font-size: 13px; color: var(--muted); }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.field input, .field select, .field textarea { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--app-bg); width: 100%; min-width: 0; }
+.field textarea { resize: vertical; min-height: 92px; font-size: 13.5px; line-height: 1.45; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt-grid { display: grid; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--app-bg); }
+.opt input { margin-top: 3px; accent-color: var(--brand); }
+.opt b { font-size: 14px; display: block; }
+.opt span { font-size: 12.5px; color: var(--muted); }
+.opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 4px; accent-color: var(--brand); width: 16px; height: 16px; }
+
+.stepper { display: flex; gap: 6px; }
+.stepper span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.stepper span.on { background: var(--brand); }
+.step-label { font-size: 12px; font-weight: 700; color: var(--brand); letter-spacing: .08em; text-transform: uppercase; }
+
+.contact-card { display: flex; gap: 12px; align-items: center; background: var(--app-bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 17px; flex: none; }
+.contact-card .body { min-width: 0; display: grid; gap: 1px; }
+.contact-card b { font-size: 15px; }
+.contact-card span { font-size: 12.5px; color: var(--muted); }
+
+.sticker { background: var(--brand); color: var(--on-brand); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.sticker .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .85; font-weight: 700; }
+.sticker h4 { font-size: 20px; margin: 4px 0 6px; }
+.sticker p { font-size: 12.5px; opacity: .92; }
+.sticker .code { font-family: var(--font-mono); font-size: 12px; margin-top: 8px; display: inline-block; background: color-mix(in srgb, var(--on-brand) 16%, transparent); padding: 2px 8px; border-radius: 6px; }
+.sticker .qr-holder { background: #fff; padding: 6px; border-radius: 10px; width: 96px; }
+
+.tiers { display: grid; gap: 8px; }
+.tier { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--app-bg); }
+.tier .medal { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 14px; background: var(--line); color: var(--muted); }
+.tier.reached .medal { background: var(--brand); color: var(--on-brand); }
+.tier b { font-size: 14px; display: block; }
+.tier span { font-size: 12px; color: var(--muted); }
+.progress { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+
+.table-wrap { overflow-x: auto; }
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.tbl th { text-align: left; font-size: 11.5px; color: var(--muted); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl td.num, .tbl th.num { text-align: right; }
+
+.toast { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--ink); color: var(--app-bg); padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 40; white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis; }
+.example-note { font-size: 11.5px; color: var(--muted); text-align: center; }
+.empty { text-align: center; color: var(--muted); font-size: 14px; padding: 24px 8px; }
+
+/* ---------- memo de estrategia ---------- */
+.memo { display: grid; gap: 36px; min-width: 0; }
+.memo section { display: grid; gap: 14px; }
+.memo h2 { font-size: 26px; letter-spacing: -.01em; }
+.memo .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); font-weight: 700; }
+.memo p, .memo li { max-width: 66ch; }
+.memo .muted { color: var(--muted); }
+.memo ul, .memo ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.loop { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
+@media (max-width: 640px) { .loop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.loop div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.loop div::before { counter-increment: s; content: counter(s); font-family: var(--font-display); font-weight: 700; color: var(--brand); font-size: 20px; }
+.loop b { font-size: 14.5px; line-height: 1.25; }
+.loop span { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.tactics { display: grid; gap: 12px; }
+.tactic { border-left: 3px solid var(--brand); padding: 2px 0 2px 16px; display: grid; gap: 4px; }
+.tactic h3 { font-size: 17px; }
+.tactic p { color: var(--ink); }
+.tactic .why { color: var(--muted); font-size: 14px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 14.5px; }
+.quote b { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .levels { grid-template-columns: minmax(0, 1fr); } }
+.levels div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.levels h4 { font-size: 17px; }
+.levels .req { font-size: 12.5px; font-weight: 700; color: var(--brand); }
+.levels ul { font-size: 13.5px; }
+.note { background: var(--warn-soft); border-radius: 14px; padding: 14px 16px; font-size: 14px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.metrics div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; }
+.metrics b { font-family: var(--font-display); font-size: 15px; }
+.metrics span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Team Nexia · Prototipo</div>
+      <h1>Comercios Amigos del barrio</h1>
+      <p class="lede">La agenda y el mapa de los locales que le dan la bienvenida a quien se muda con Team Nexia. Probá la app como vecino, como comercio o como inmobiliaria.</p>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="device">
+      <div class="mode-switch" role="group" aria-label="Ver la app como">
+        <button type="button" data-action="mode" data-mode="vecino" aria-pressed="true">Vecino</button>
+        <button type="button" data-action="mode" data-mode="comercio" aria-pressed="false">Comercio</button>
+        <button type="button" data-action="mode" data-mode="nexia" aria-pressed="false">Team Nexia</button>
+      </div>
+      <p class="mode-hint" id="modeHint"></p>
+      <div class="phone" id="phone">
+        <div class="statusbar" aria-hidden="true"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="screen" id="screen"></div>
+        <nav class="tabbar" id="tabbar" aria-label="Secciones"></nav>
+        <div id="overlay"></div>
+        <div class="toast" id="toast" hidden></div>
+      </div>
+      <p class="example-note">Datos de ejemplo. Los comercios, direcciones y teléfonos son ficticios.</p>
+    </div>
+
+    <article class="memo">
+      <section>
+        <div class="kicker">La idea</div>
+        <h2>Nexia le presenta el barrio al vecino nuevo. El barrio le presenta Nexia a sus clientes.</h2>
+        <p>Cada familia que se muda con Team Nexia recibe, junto con las llaves, un link y un QR con su <b>Pase Vecino</b>: un mapa de los comercios amigos que están cerca de su nueva casa y el beneficio que cada uno le da. Al local le llegan clientes nuevos sin pagar publicidad. A cambio, el local agenda a Team Nexia y la recomienda cuando alguien del mostrador habla de vender, alquilar o tasar.</p>
+      </section>
+
+      <section>
+        <div class="kicker">Cómo circula</div>
+        <div class="loop">
+          <div><b>Nexia suma el local</b><span>Visita, alta en 3 minutos desde el celular del comerciante. Queda en el catálogo.</span></div>
+          <div><b>Nexia entrega el pase</b><span>Link o QR personalizado al vecino que se muda: por WhatsApp y en una tarjeta con las llaves.</span></div>
+          <div><b>El vecino compra cerca</b><span>Muestra el pase o el cupón en el local. El local ve que el cliente vino por Nexia.</span></div>
+          <div><b>El local refiere a Nexia</b><span>Con su código propio. Cada contacto queda atribuido y el local sube de nivel.</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="kicker">Estrategia para los locales</div>
+        <h2>Que te refieran desde el primer día</h2>
+        <p class="muted">El momento de mayor buena voluntad es el alta. Por eso el pedido de referir está dentro del registro, no en una charla posterior.</p>
+        <div class="tactics">
+          <div class="tactic">
+            <h3>1. Agendar a Team Nexia es un paso del alta</h3>
+            <p>El paso 3 del registro muestra la tarjeta de contacto de Team Nexia y tres compromisos simples: guardar el contacto, recibir el reporte mensual y pasar su código cuando un cliente pregunte por una inmobiliaria.</p>
+            <p class="why">Quien agenda el contacto en el momento lo tiene a mano cuando aparece la pregunta. Después de la visita ya no lo hace.</p>
+          </div>
+          <div class="tactic">
+            <h3>2. Un código por local, desde el minuto uno</h3>
+            <p>Al terminar el alta el local recibe su código (por ejemplo NX-ESPIGA) y un QR que lleva a un formulario corto con ese código ya cargado. Todo contacto que llega por ahí queda atribuido.</p>
+            <p class="why">Sin atribución no hay reconocimiento, y sin reconocimiento el local deja de referir.</p>
+          </div>
+          <div class="tactic">
+            <h3>3. Reciprocidad que se ve</h3>
+            <p>Cada mes el local recibe un mensaje con sus números: cuántos vecinos le mandó Nexia, cuántos cupones se usaron y cuántos contactos refirió. El panel del comercio muestra lo mismo en tiempo real.</p>
+            <p class="why">El local refiere cuando siente que Nexia le manda clientes primero.</p>
+          </div>
+          <div class="tactic">
+            <h3>4. Herramientas listas para usar</h3>
+            <p>Calco de vitrina con el QR del local, un mensaje armado para estados y listas de difusión de WhatsApp, y una frase para el mostrador.</p>
+            <div class="quote"><b>Frase para el mostrador</b>“¿Se están por mudar o vender? Nosotros trabajamos con Team Nexia. Escaneá el QR de la vitrina y te llaman hoy.”</div>
+          </div>
+          <div class="tactic">
+            <h3>5. Respuesta rápida y aviso al local</h3>
+            <p>Nexia contacta a cada referido en menos de 2 horas hábiles y le avisa al local: “Gracias, Laura llegó por vos”. Si hay operación, el local se entera antes que nadie.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="kicker">Niveles</div>
+        <h2>Premios en visibilidad y en especie</h2>
+        <div class="levels">
+          <div><h4>Amigo</h4><span class="req">Al sumarse</span><ul><li>Ficha y pin en el mapa</li><li>Calco de vitrina</li><li>Reporte mensual</li></ul></div>
+          <div><h4>Socio</h4><span class="req">3 contactos referidos</span><ul><li>Destacado arriba en su rubro</li><li>Posteo propio en las redes de Nexia</li><li>Tasación sin cargo para el dueño</li></ul></div>
+          <div><h4>Embajador</h4><span class="req">1 operación concretada</span><ul><li>Placa “Embajador del barrio”</li><li>Canasta o voucher de agradecimiento</li><li>Aparece en la tarjeta de llaves</li></ul></div>
+        </div>
+        <p class="note"><b>Antes de ofrecer dinero por referido</b>, consultalo con tu colegio de corredores o martilleros. En varias jurisdicciones compartir honorarios con personas no matriculadas está restringido. Por eso este plan usa premios en especie y visibilidad.</p>
+      </section>
+
+      <section>
+        <div class="kicker">El pitch en la visita</div>
+        <h2>Qué le decís al comerciante</h2>
+        <ol>
+          <li><b>Te mandamos clientes nuevos.</b> Cada mes se mudan familias al barrio con nosotros y les damos tu dirección el primer día.</li>
+          <li><b>No te cuesta nada.</b> Solo un beneficio de bienvenida que vos elegís, por única vez.</li>
+          <li><b>Lo ves en números.</b> Te mandamos un reporte de cuántos vecinos llegaron por Nexia.</li>
+          <li><b>Y si alguien te pregunta por una inmobiliaria</b>, pasale tu código. Nosotros te reconocemos cada contacto.</li>
+        </ol>
+        <p class="muted">Mostrá la app en modo Comercio y hacé el alta con ellos en el momento.</p>
+      </section>
+
+      <section>
+        <div class="kicker">Qué medir</div>
+        <div class="metrics">
+          <div><b>Locales activos</b><span>Meta: 15 en el primer barrio</span></div>
+          <div><b>Pases entregados</b><span>Uno por cada mudanza</span></div>
+          <div><b>Cupones usados</b><span>Prueba de valor para el local</span></div>
+          <div><b>Contactos referidos</b><span>Por local y por mes</span></div>
+          <div><b>Operaciones</b><span>Con origen en un comercio</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="kicker">Del prototipo a la app</div>
+        <ul>
+          <li>Catálogo en una planilla o base simple (Airtable o Google Sheets) que alimenta la app.</li>
+          <li>Mapa real con Google Maps o OpenStreetMap a partir de la dirección de cada local.</li>
+          <li>Web app instalable (PWA): el vecino no necesita bajar nada de una tienda.</li>
+          <li>Formulario de referidos conectado al CRM o a un WhatsApp Business de Nexia.</li>
+        </ul>
+      </section>
+    </article>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- íconos ----------
+  const ICON = {
+    panaderia: '<path d="M4 11c0-3 3.6-5 8-5s8 2 8 5c0 1-.6 1.6-1.5 1.8V18h-13v-5.2C4.6 12.6 4 12 4 11z"/><path d="M9 9v3M12 8.5v3.5M15 9v3"/>',
+    cafe: '<path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8.5 3.5v3M12 3.5v3"/>',
+    hogar: '<path d="M14.5 4.5a4 4 0 0 0-4.9 5.3L4 15.4 6.6 18l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.6 2.6-2.2-.6-.6-2.2z"/>',
+    almacen: '<path d="M4 10h16l-1.6 9H5.6z"/><path d="M8 10l3-5.5M16 10l-3-5.5M9 14v2M15 14v2M12 14v2"/>',
+    salud: '<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z"/>',
+    mascotas: '<circle cx="6.5" cy="10" r="1.6"/><circle cx="10" cy="6.2" r="1.6"/><circle cx="14" cy="6.2" r="1.6"/><circle cx="17.5" cy="10" r="1.6"/><path d="M12 12c-3 0-5 3.2-5 5.2 0 1.6 1.4 1.8 2.4 1.8s1.6-.5 2.6-.5 1.6.5 2.6.5 2.4-.2 2.4-1.8C17 15.2 15 12 12 12z"/>',
+    deporte: '<path d="M3 10v4M6.5 7.5v9M17.5 7.5v9M21 10v4M6.5 12h11"/>',
+    belleza: '<circle cx="6.5" cy="7" r="2.5"/><circle cx="6.5" cy="17" r="2.5"/><path d="M8.6 8.4 20 17M8.6 15.6 20 7"/>',
+    comida: '<path d="M4 6.5c5-2.3 11-2.3 16 0L12 21z"/><circle cx="10" cy="9.5" r="1"/><circle cx="14" cy="11.5" r="1"/><circle cx="12" cy="15" r="1"/>',
+    servicios: '<path d="M12 3.5s6 6.4 6 10.3a6 6 0 0 1-12 0C6 9.9 12 3.5 12 3.5z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
+    home: '<path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/>',
+    map: '<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+    tag: '<path d="M3.5 12.5V4.5h8l9 9-8 8z"/><circle cx="8" cy="9" r="1.5"/>',
+    ticket: '<path d="M3.5 8a2 2 0 0 0 0 4v4h17v-4a2 2 0 0 1 0-4V4h-17z"/><path d="M14 4v12" stroke-dasharray="2 2"/>',
+    store: '<path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5.5 12v8h13v-8M10 20v-5h4v5"/>',
+    kit: '<rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 18v2.5"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
+    list: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+    share: '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8 15.8 6.7M8.2 13.2l7.6 4.1"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.3c2.1.7 3.5 2.8 3.5 5.7"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    pin: '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+    phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1C10.7 20 4 13.3 4 5a1 1 0 0 1 1-1z"/>',
+    walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6.5L14 17v4M8 11.5 10 8l4 1 2 3.5h2.5M11.5 14.5 12.5 9"/>',
+    search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    back: '<path d="M15 5l-7 7 7 7"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 8.5-8.5M16 7l2.5 2.5M14 9l2 2"/>'
+  };
+  const ic = (n, cls) => '<svg class="ic ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>';
+
+  // ---------- datos de ejemplo ----------
+  const CATS = {
+    panaderia: { label: 'Panaderías', one: 'Panadería', color: '#C7782B' },
+    cafe: { label: 'Cafés', one: 'Café', color: '#8A5A44' },
+    almacen: { label: 'Almacén y verdulería', one: 'Almacén', color: '#4E9A3F' },
+    hogar: { label: 'Hogar y mudanza', one: 'Hogar', color: '#5468C4' },
+    comida: { label: 'Comida', one: 'Comida', color: '#D2533A' },
+    salud: { label: 'Salud', one: 'Salud', color: '#C93F5A' },
+    mascotas: { label: 'Mascotas', one: 'Mascotas', color: '#8E5BB5' },
+    deporte: { label: 'Deporte', one: 'Deporte', color: '#2F8F7E' },
+    belleza: { label: 'Belleza', one: 'Belleza', color: '#B8508F' },
+    servicios: { label: 'Servicios', one: 'Servicios', color: '#3A82C4' }
+  };
+  const HOME = { x: 50, y: 40 };
+  const MUDANZA = ['tito', 'color', 'burbuja', 'rosa', 'fugazzeta'];
+
+  const shops = [
+    { id: 'espiga', name: 'Panadería La Espiga', cat: 'panaderia', rubro: 'Panadería y pastelería', ben: '15% en tu primera compra', det: 'Y media docena de medialunas de regalo para el primer desayuno.', x: -50, y: -130, hours: 'Lun a sáb 7 a 20 h · Dom 7 a 13 h', addr: 'Belgrano 1380', tel: '11 5555-0142', status: 'activo', sent: 23, used: 11, refs: 4, ops: 1 },
+    { id: 'ombu', name: 'Café Ombú', cat: 'cafe', rubro: 'Café de especialidad', ben: '2x1 en cafés', det: 'Durante toda la primera semana en el barrio.', x: 150, y: 30, hours: 'Todos los días 8 a 20 h', addr: 'Av. San Martín 1520', tel: '11 5555-0187', status: 'activo', sent: 19, used: 12, refs: 2, ops: 0 },
+    { id: 'tito', name: 'Ferretería Don Tito', cat: 'hogar', rubro: 'Ferretería y cerrajería', ben: 'Copia de llaves gratis', det: 'Y 10% en tarugos, cerraduras y lámparas. Ideal para los primeros días.', x: -170, y: 70, hours: 'Lun a vie 8 a 13 y 16 a 20 h · Sáb 8 a 13 h', addr: 'Sarmiento 1290', tel: '11 5555-0110', status: 'activo', sent: 23, used: 17, refs: 5, ops: 1 },
+    { id: 'color', name: 'Pinturería Color Vivo', cat: 'hogar', rubro: 'Pinturería', ben: '15% en pintura', det: 'Látex, esmaltes y rodillos, con asesoramiento para cada ambiente.', x: 250, y: -170, hours: 'Lun a sáb 8 a 19 h', addr: 'Mitre 1660', tel: '11 5555-0163', status: 'activo', sent: 21, used: 6, refs: 1, ops: 0 },
+    { id: 'huerto', name: 'Verdulería El Huerto', cat: 'almacen', rubro: 'Verdulería', ben: '10% los martes', det: 'Durante tus primeros 3 meses. Envío sin cargo hasta 5 cuadras.', x: 50, y: 170, hours: 'Lun a sáb 8 a 21 h', addr: 'Moreno 1460', tel: '11 5555-0128', status: 'activo', sent: 18, used: 9, refs: 0, ops: 0 },
+    { id: 'rosa', name: 'Almacén Doña Rosa', cat: 'almacen', rubro: 'Almacén de barrio', ben: 'Canasta de bienvenida', det: 'Yerba, azúcar y bizcochitos para el primer mate en la casa nueva.', x: 70, y: -270, hours: 'Lun a sáb 9 a 21 h', addr: 'Rivadavia 1470', tel: '11 5555-0199', status: 'activo', sent: 20, used: 15, refs: 3, ops: 0 },
+    { id: 'central', name: 'Farmacia Central', cat: 'salud', rubro: 'Farmacia y perfumería', ben: '10% en perfumería', det: 'No incluye medicamentos.', x: -130, y: -250, hours: 'Todos los días 8 a 22 h', addr: 'Rivadavia 1320', tel: '11 5555-0175', status: 'activo', sent: 22, used: 8, refs: 1, ops: 0 },
+    { id: 'patitas', name: 'Veterinaria Patitas', cat: 'mascotas', rubro: 'Veterinaria y pet shop', ben: 'Consulta de bienvenida gratis', det: 'Control general y chapita con la dirección nueva para tu mascota.', x: 330, y: 130, hours: 'Lun a sáb 9 a 20 h', addr: 'Junín 160', tel: '11 5555-0134', status: 'activo', sent: 9, used: 5, refs: 0, ops: 0 },
+    { id: 'pulso', name: 'Gimnasio Pulso', cat: 'deporte', rubro: 'Gimnasio', ben: '50% el primer mes', det: 'Pase libre y sin matrícula.', x: -270, y: -50, hours: 'Lun a vie 7 a 23 h · Sáb 9 a 18 h', addr: 'Laprida 70', tel: '11 5555-0151', status: 'activo', sent: 14, used: 3, refs: 1, ops: 0 },
+    { id: 'tijera', name: 'Estudio Tijera', cat: 'belleza', rubro: 'Peluquería', ben: '20% en tu primer corte', det: 'Con turno previo por WhatsApp.', x: 170, y: -70, hours: 'Mar a sáb 10 a 20 h', addr: 'Av. Güemes 70', tel: '11 5555-0118', status: 'activo', sent: 16, used: 4, refs: 2, ops: 0 },
+    { id: 'fugazzeta', name: 'Pizzería La Fugazzeta', cat: 'comida', rubro: 'Pizzería', ben: '15% en tu primer pedido', det: 'Con envío sin cargo. La pizza de la primera noche sin cocina.', x: -30, y: 270, hours: 'Todos los días 19 a 0 h', addr: 'Alsina 1420', tel: '11 5555-0106', status: 'activo', sent: 23, used: 19, refs: 2, ops: 0 },
+    { id: 'burbuja', name: 'Lavadero Burbuja', cat: 'servicios', rubro: 'Lavadero', ben: '20% en cortinas y acolchados', det: 'Para dejar todo listo después de la mudanza.', x: -250, y: 230, hours: 'Lun a sáb 8 a 20 h', addr: 'Moreno 1240', tel: '11 5555-0147', status: 'activo', sent: 12, used: 7, refs: 0, ops: 0 },
+    { id: 'raiz', name: 'Vivero Raíz', cat: 'hogar', rubro: 'Vivero', ben: '10% en plantas y macetas', det: 'Y un plantín de aromáticas de regalo.', x: 370, y: -330, hours: 'Mar a dom 9 a 19 h', addr: 'Ayacucho 330', tel: '11 5555-0193', status: 'activo', sent: 8, used: 2, refs: 0, ops: 0 },
+    { id: 'roble', name: 'Mueblería Roble', cat: 'hogar', rubro: 'Muebles a medida', ben: '10% en tu primer mueble', det: 'Medición en tu casa sin cargo.', x: -370, y: -320, hours: 'Lun a vie 9 a 18 h', addr: 'Laprida 340', tel: '11 5555-0170', status: 'pendiente', sent: 0, used: 0, refs: 0, ops: 0 },
+    { id: 'polo', name: 'Heladería Polo Norte', cat: 'comida', rubro: 'Heladería', ben: 'A definir en la visita', det: '', x: 350, y: 300, hours: '', addr: 'Junín 360', tel: '11 5555-0121', status: 'invitado', sent: 0, used: 0, refs: 0, ops: 0 }
+  ];
+
+  const S = {
+    mode: 'vecino',
+    tab: { vecino: 'inicio', comercio: 'alta', nexia: 'catalogo' },
+    cat: 'todas', q: '', sheet: null, coupon: false,
+    used: new Set(['ombu']),
+    vecino: { nombres: 'Lucía y Martín', dir: 'Av. San Martín 1450', mudanza: '2026-10-20' },
+    ob: { step: 1, nombre: 'Panadería La Espiga', rubro: 'panaderia', dir: 'Belgrano 1380', wpp: '11 5555-0142', horario: 'Lun a sáb 7 a 20 h', tipo: 'pct', pct: 15, regalo: 'media docena de medialunas', otro: '', validez: 90, agenda: false, reporte: true, codigo: false, done: false },
+    refForm: false,
+    myRefs: [
+      { name: 'Laura Giménez', need: 'Tasar', status: 'Tasación agendada', when: 'hace 2 días' },
+      { name: 'Hernán Paz', need: 'Alquilar', status: 'Contactado', when: 'hace 5 días' },
+      { name: 'Familia Ortiz', need: 'Vender', status: 'Operación concretada', when: 'septiembre' },
+      { name: 'Sofía Ruiz', need: 'Comprar', status: 'Contactado', when: 'agosto' }
+    ],
+    share: { nombres: 'Lucía y Martín', dir: 'Av. San Martín 1450', fecha: '2026-10-20' },
+    invite: { nombre: 'Heladería Polo Norte' }
+  };
+
+  const LEADS = [
+    { name: 'Laura Giménez', need: 'Tasar', from: 'NX-ESPIGA', when: 'hace 2 días' },
+    { name: 'Pablo Ferreyra', need: 'Vender', from: 'NX-TITO', when: 'hace 3 días' },
+    { name: 'Hernán Paz', need: 'Alquilar', from: 'NX-ESPIGA', when: 'hace 5 días' },
+    { name: 'Marta Sosa', need: 'Alquilar', from: 'NX-TIJERA', when: 'hace 6 días' },
+    { name: 'Diego Luna', need: 'Comprar', from: 'NX-ROSA', when: 'hace 1 semana' }
+  ];
+
+  // ---------- utilidades ----------
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const slug = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const codeFor = (name) => 'NX-' + slug(name).split('-').filter((w) => !['panaderia', 'cafe', 'ferreteria', 'pintureria', 'verduleria', 'almacen', 'farmacia', 'veterinaria', 'gimnasio', 'estudio', 'pizzeria', 'lavadero', 'vivero', 'muebleria', 'heladeria', 'la', 'el', 'don', 'dona', 'de', 'los', 'las'].includes(w)).join('').slice(0, 8).toUpperCase();
+  const cuadras = (s) => Math.max(1, Math.round((Math.abs(s.x - HOME.x) + Math.abs(s.y - HOME.y)) / 100));
+  const minutos = (s) => Math.max(1, Math.round(cuadras(s) * 1.3));
+  const fmtDate = (iso, plus) => { const d = new Date(iso + 'T12:00:00'); if (plus) d.setDate(d.getDate() + plus); return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  const active = () => shops.filter((s) => s.status === 'activo');
+  const byDist = (arr) => arr.slice().sort((a, b) => cuadras(a) - cuadras(b) || a.name.localeCompare(b.name));
+  const catDot = (c, size) => '<span class="cat-dot" style="background:' + CATS[c].color + (size ? ';width:' + size + 'px;height:' + size + 'px' : '') + '">' + ic(c) + '</span>';
+  const vecinoLink = (n, d) => 'https://barrio.teamnexia.com/v/' + slug(n + ' ' + d);
+  const shopLink = (name) => 'https://barrio.teamnexia.com/r/' + codeFor(name).toLowerCase();
+
+  function qr(text) {
+    if (!window.qrcode) return '<div class="qr-fallback">El QR aparece al cargar la página con conexión</div>';
+    const q = window.qrcode(0, 'M'); q.addData(text); q.make();
+    const n = q.getModuleCount(); let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += 'M' + c + ' ' + r + 'h1v1h-1z';
+    return '<svg class="qr" viewBox="-2 -2 ' + (n + 4) + ' ' + (n + 4) + '" shape-rendering="crispEdges" role="img" aria-label="Código QR de ' + esc(text) + '"><rect x="-2" y="-2" width="' + (n + 4) + '" height="' + (n + 4) + '" fill="#ffffff"/><path d="' + d + '" fill="#0B1B1D"/></svg>';
+  }
+
+  let toastTimer;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
+  function copyFrom(id) {
+    const el = document.getElementById(id); if (!el) return;
+    const text = el.value != null && el.tagName !== 'DIV' ? el.value : el.textContent;
+    const fallback = () => { if (el.select) { el.focus(); el.select(); } else { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast('Texto seleccionado. Copialo con tu teclado.'); };
+    try { navigator.clipboard.writeText(text).then(() => toast('Copiado'), fallback); } catch (e) { fallback(); }
+  }
+
+  // ---------- mapa ----------
+  const EW = { '-300': 'Rivadavia', '-200': 'Mitre', '-100': 'Belgrano', '0': 'Av. San Martín', '100': 'Sarmiento', '200': 'Moreno', '300': 'Alsina' };
+  const NS = { '-300': 'Laprida', '-200': 'Lavalle', '-100': 'Tucumán', '0': 'Córdoba', '100': 'Paraguay', '200': 'Av. Güemes', '300': 'Junín', '400': 'Ayacucho' };
+  function mapSVG(list) {
+    let g = '';
+    for (let bx = -500; bx < 500; bx += 100) {
+      for (let by = -500; by < 500; by += 100) {
+        const gl = (bx === 200 ? 14 : 8), gr = (bx + 100 === 200 ? 14 : 8);
+        const gt = (by === 0 ? 14 : 8), gb = (by + 100 === 0 ? 14 : 8);
+        const park = bx === 100 && by === 100;
+        g += '<rect x="' + (bx + gl) + '" y="' + (by + gt) + '" width="' + (100 - gl - gr) + '" height="' + (100 - gt - gb) + '" rx="6" fill="var(' + (park ? '--map-park' : '--map-block') + ')"/>';
+      }
+    }
+    g += '<text x="150" y="154" text-anchor="middle" font-size="11" fill="var(--map-label)" font-weight="600">Plaza</text>';
+    Object.keys(EW).forEach((y) => { g += '<text x="-412" y="' + (+y + 4) + '" font-size="10.5" fill="var(--map-label)" font-weight="600">' + EW[y] + '</text>'; });
+    Object.keys(NS).forEach((x) => { g += '<text transform="translate(' + (+x + 4) + ' -330) rotate(-90)" font-size="10.5" fill="var(--map-label)" font-weight="600">' + NS[x] + '</text>'; });
+    g += '<circle cx="' + HOME.x + '" cy="' + HOME.y + '" r="300" fill="none" stroke="var(--map-ring)" stroke-width="2" stroke-dasharray="6 6" opacity=".55"/>';
+    g += '<text x="' + HOME.x + '" y="' + (HOME.y + 318) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--map-ring)">3 cuadras a la redonda</text>';
+    list.forEach((s) => {
+      const sel = S.sheet === s.id;
+      g += '<g class="pin' + (sel ? ' sel' : '') + '" data-action="open" data-id="' + s.id + '" transform="translate(' + s.x + ' ' + s.y + ')" role="button" tabindex="0" aria-label="' + esc(s.name) + '">' +
+        '<circle class="halo" r="' + (sel ? 30 : 24) + '" fill="' + CATS[s.cat].color + '" opacity=".18"/>' +
+        '<circle r="' + (sel ? 19 : 15) + '" fill="' + CATS[s.cat].color + '" stroke="var(--map-block)" stroke-width="3"/>' +
+        '<g transform="scale(' + (sel ? 1.05 : .85) + ') translate(-12 -12)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[s.cat] + '</g></g>';
+    });
+    g += '<g transform="translate(' + HOME.x + ' ' + HOME.y + ')"><circle r="26" fill="var(--brand)" opacity=".2"/><circle r="17" fill="var(--brand)" stroke="var(--map-block)" stroke-width="3"/><g transform="scale(.85) translate(-12 -12)" fill="none" stroke="var(--on-brand)" stroke-width="2.2" stroke-linejoin="round">' + ICON.home + '</g></g>';
+    return '<svg viewBox="-420 -400 840 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mapa de comercios amigos alrededor de tu casa">' + g + '</svg>';
+  }
+
+  // ---------- vistas: vecino ----------
+  const chipRow = () => '<div class="chips" role="group" aria-label="Rubros"><button class="chip" data-action="cat" data-cat="todas" aria-pressed="' + (S.cat === 'todas') + '">Todos</button>' +
+    Object.keys(CATS).filter((c) => active().some((s) => s.cat === c)).map((c) => '<button class="chip" data-action="cat" data-cat="' + c + '" aria-pressed="' + (S.cat === c) + '"><i style="background:' + CATS[c].color + '"></i>' + CATS[c].label + '</button>').join('') + '</div>';
+
+  const shopRow = (s) => '<button class="row" data-action="open" data-id="' + s.id + '">' + catDot(s.cat) +
+    '<span class="body"><span class="name">' + esc(s.name) + '</span><span class="benefit-line">' + esc(s.ben) + '</span><span class="meta">' + esc(s.rubro) + (S.used.has(s.id) ? ' · <span class="used-tag">Usado</span>' : '') + '</span></span>' +
+    '<span class="dist"><b>' + cuadras(s) + '</b>' + (cuadras(s) === 1 ? 'cuadra' : 'cuadras') + '</span></button>';
+
+  const V = {};
+  V.inicio = function () {
+    const a = active(), near = byDist(a);
+    const hasta = fmtDate(S.vecino.mudanza, 90);
+    return '<div class="hero"><div class="brandline"><span class="logo-mark">N</span>Team Nexia · Barrio</div>' +
+      '<h2>Hola, ' + esc(S.vecino.nombres) + '</h2><p>Bienvenidos a ' + esc(S.vecino.dir) + '. Estos comercios del barrio les dan un beneficio por ser vecinos nuevos.</p>' +
+      '<div><span class="pill on-brand">' + ic('ticket') + 'Pase activo hasta el ' + hasta + '</span></div></div>' +
+      '<div class="pad">' +
+      '<div class="stats"><div class="stat"><b>' + a.length + '</b><span>comercios amigos</span></div><div class="stat"><b>' + a.filter((s) => cuadras(s) <= 3).length + '</b><span>a 3 cuadras o menos</span></div><div class="stat"><b>' + S.used.size + '/' + a.length + '</b><span>beneficios usados</span></div></div>' +
+      '<div class="sec-head"><h3>Para los primeros días</h3><button class="link-btn" data-action="tab" data-tab="mapa">Ver en el mapa</button></div>' +
+      '<div class="hscroll">' + MUDANZA.map((id) => shops.find((s) => s.id === id)).map((s) => '<button class="mcard" data-action="open" data-id="' + s.id + '"><span class="top">' + catDot(s.cat, 30) + '<small>a ' + cuadras(s) + ' cuadras</small></span><strong>' + esc(s.name) + '</strong><span class="pill benefit">' + esc(s.ben) + '</span></button>').join('') + '</div>' +
+      '<div class="sec-head"><h3>Lo más cerca de tu casa</h3><button class="link-btn" data-action="tab" data-tab="beneficios">Ver todos</button></div>' +
+      '<div class="list">' + near.slice(0, 5).map(shopRow).join('') + '</div>' +
+      '<div class="card"><h3>¿Necesitás algo de la casa?</h3><p class="sub">Tu asesora de Team Nexia sigue a disposición después de la mudanza.</p><div class="contact-card">' + '<span class="avatar">TN</span><span class="body"><b>Team Nexia</b><span class="sel-text">11 5555-0100</span></span></div></div>' +
+      '</div>';
+  };
+  V.mapa = function () {
+    const list = active().filter((s) => S.cat === 'todas' || s.cat === S.cat);
+    return '<div class="map-wrap"><div class="map-top"><h3>Tu barrio</h3>' + chipRow() + '</div><div class="map">' + mapSVG(list) +
+      '<div class="map-legend"><span class="scale"></span>1 cuadra · 100 m</div></div></div>';
+  };
+  V.beneficios = function () {
+    const q = S.q.trim().toLowerCase();
+    const list = byDist(active().filter((s) => (S.cat === 'todas' || s.cat === S.cat) && (!q || (s.name + ' ' + s.rubro + ' ' + s.ben).toLowerCase().includes(q))));
+    return '<div class="pad"><h3 style="font-size:20px">Beneficios cerca tuyo</h3>' +
+      '<label class="search">' + ic('search') + '<input id="q" type="search" placeholder="Buscar un local o rubro" value="' + esc(S.q) + '" aria-label="Buscar"></label>' + chipRow() +
+      '<div id="benefitList">' + (list.length ? '<div class="list">' + list.map(shopRow).join('') + '</div>' : '<p class="empty">No hay comercios amigos con ese nombre todavía.</p>') + '</div></div>';
+  };
+  V.pase = function () {
+    const hasta = fmtDate(S.vecino.mudanza, 90);
+    const id = 'PV-' + slug(S.vecino.nombres).slice(0, 6).toUpperCase() + '-1026';
+    return '<div class="pad"><div class="pass"><div><div class="brandline" style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase"><span class="logo-mark">N</span>Pase Vecino Nexia</div></div>' +
+      '<div class="who">' + esc(S.vecino.nombres) + '</div><div class="qr-holder">' + qr('https://barrio.teamnexia.com/pase/' + id.toLowerCase()) + '</div>' +
+      '<dl><dt>Dirección</dt><dd>' + esc(S.vecino.dir) + '</dd><dt>Se mudaron</dt><dd>' + fmtDate(S.vecino.mudanza) + '</dd><dt>Válido hasta</dt><dd>' + hasta + '</dd><dt>N.º de pase</dt><dd style="font-family:var(--font-mono)">' + id + '</dd></dl></div>' +
+      '<p class="sub" style="color:var(--muted);font-size:13.5px">Mostrá este pase en cualquier comercio amigo. El local lo escanea y registra tu beneficio.</p>' +
+      '<div class="sec-head"><h3>Ya usaste</h3></div>' +
+      (S.used.size ? '<div class="list">' + shops.filter((s) => S.used.has(s.id)).map(shopRow).join('') + '</div>' : '<p class="empty">Todavía no usaste ningún beneficio.</p>') + '</div>';
+  };
+
+  function sheetHTML() {
+    const s = shops.find((x) => x.id === S.sheet); if (!s) return '';
+    if (S.coupon) {
+      const code = codeFor(s.name) + '-' + slug(S.vecino.nombres).slice(0, 2).toUpperCase() + '26';
+      return '<div class="sheet-backdrop" data-action="close"></div><div class="sheet" role="dialog" aria-label="Cupón de ' + esc(s.name) + '"><div class="grabber"></div>' +
+        '<div class="sheet-head"><button class="btn small ghost" data-action="uncoupon" aria-label="Volver">' + ic('back') + '</button><div style="flex:1;min-width:0"><h3>Tu cupón</h3><p>' + esc(s.name) + '</p></div><button class="btn small ghost" data-action="close" aria-label="Cerrar">' + ic('close') + '</button></div>' +
+        '<div class="coupon"><span class="pill benefit">' + esc(s.ben) + '</span><div class="qr-box">' + qr('https://barrio.teamnexia.com/c/' + code.toLowerCase()) + '</div><div class="code">' + code + '</div><p style="font-size:13px;color:var(--muted)">Mostrale esta pantalla a quien te atienda. Válido hasta el ' + fmtDate(S.vecino.mudanza, 90) + '.</p></div>' +
+        (S.used.has(s.id) ? '<p class="pill ok" style="justify-self:center">' + ic('check') + 'Registrado como usado</p>' : '<button class="btn primary block" data-action="markused" data-id="' + s.id + '">' + ic('check') + 'El local ya me lo aplicó</button>') + '</div>';
+    }
+    return '<div class="sheet-backdrop" data-action="close"></div><div class="sheet" role="dialog" aria-label="' + esc(s.name) + '"><div class="grabber"></div>' +
+      '<div class="sheet-head">' + catDot(s.cat, 46) + '<div style="flex:1;min-width:0"><h3>' + esc(s.name) + '</h3><p>' + esc(s.rubro) + ' · Comercio Amigo</p></div><button class="btn small ghost" data-action="close" aria-label="Cerrar">' + ic('close') + '</button></div>' +
+      '<div class="benefit-box"><small>Beneficio para vecinos nuevos</small><div class="big">' + esc(s.ben) + '</div>' + (s.det ? '<p>' + esc(s.det) + '</p>' : '') + '<small>Una vez por pase · hasta el ' + fmtDate(S.vecino.mudanza, 90) + '</small></div>' +
+      '<div class="facts"><div class="fact">' + ic('walk') + '<span>A ' + cuadras(s) + (cuadras(s) === 1 ? ' cuadra' : ' cuadras') + ' de tu casa · ' + minutos(s) + ' min caminando</span></div>' +
+      '<div class="fact">' + ic('pin') + '<span>' + esc(s.addr) + '</span></div><div class="fact">' + ic('clock') + '<span>' + esc(s.hours) + '</span></div>' +
+      '<div class="fact">' + ic('phone') + '<span>WhatsApp <span class="sel-text">' + esc(s.tel) + '</span></span></div></div>' +
+      '<div class="btn-row">' + (S.used.has(s.id) ? '<span class="btn ghost">' + ic('check') + 'Ya lo usaste</span>' : '<button class="btn accent" data-action="coupon">' + ic('ticket') + 'Usar beneficio</button>') +
+      '<a class="btn ghost" href="https://www.google.com/maps/search/' + encodeURIComponent(s.addr) + '" target="_blank" rel="noopener">' + ic('map') + 'Cómo llegar</a></div></div>';
+  }
+
+  // ---------- vistas: comercio ----------
+  const C = {};
+  function benefitText() {
+    const o = S.ob;
+    if (o.tipo === 'pct') return (o.pct || 0) + '% en tu primera compra';
+    if (o.tipo === 'regalo') return 'Regalo: ' + (o.regalo || 'a definir');
+    if (o.tipo === '2x1') return '2x1 la primera semana';
+    return o.otro || 'Tu beneficio';
+  }
+  C.alta = function () {
+    const o = S.ob;
+    const step = '<div class="stepper" aria-hidden="true">' + [1, 2, 3, 4].map((n) => '<span class="' + (n <= o.step ? 'on' : '') + '"></span>').join('') + '</div>';
+    let body = '';
+    if (o.step === 1) {
+      body = '<div class="step-label">Paso 1 de 4</div><h3 style="font-size:22px">Sumate como Comercio Amigo</h3><p class="sub" style="color:var(--muted)">Team Nexia te presenta a cada familia que se muda al barrio. Vos elegís un beneficio de bienvenida.</p>' +
+        '<div class="card"><div class="field"><label for="ob-nombre">Nombre del local</label><input id="ob-nombre" data-bind="nombre" value="' + esc(o.nombre) + '"></div>' +
+        '<div class="field"><label for="ob-rubro">Rubro</label><select id="ob-rubro" data-bind="rubro">' + Object.keys(CATS).map((c) => '<option value="' + c + '"' + (o.rubro === c ? ' selected' : '') + '>' + CATS[c].one + '</option>').join('') + '</select></div>' +
+        '<div class="field"><label for="ob-dir">Dirección</label><input id="ob-dir" data-bind="dir" value="' + esc(o.dir) + '"></div>' +
+        '<div class="two"><div class="field"><label for="ob-wpp">WhatsApp</label><input id="ob-wpp" data-bind="wpp" value="' + esc(o.wpp) + '" inputmode="tel"></div><div class="field"><label for="ob-hor">Horario</label><input id="ob-hor" data-bind="horario" value="' + esc(o.horario) + '"></div></div></div>' +
+        '<button class="btn primary block" data-action="obnext">Siguiente: tu beneficio</button>';
+    } else if (o.step === 2) {
+      const opt = (v, t, d) => '<label class="opt"><input type="radio" name="ob-tipo" data-bind="tipo" value="' + v + '"' + (o.tipo === v ? ' checked' : '') + '><span><b>' + t + '</b><span>' + d + '</span></span></label>';
+      body = '<div class="step-label">Paso 2 de 4</div><h3 style="font-size:22px">¿Qué le das al vecino nuevo?</h3>' +
+        '<div class="opt-grid">' + opt('pct', 'Descuento en la primera compra', 'El más usado. Entre 10% y 20% funciona bien.') + opt('regalo', 'Regalo de bienvenida', 'Algo chico que se lleve a la casa nueva.') + opt('2x1', '2x1 la primera semana', 'Ideal para cafés y comida.') + opt('otro', 'Otro beneficio', 'Lo escribís vos.') + '</div>' +
+        '<div class="card"><div class="two"><div class="field"><label for="ob-pct">Descuento %</label><input id="ob-pct" type="number" min="5" max="50" data-bind="pct" value="' + esc(o.pct) + '"></div>' +
+        '<div class="field"><label for="ob-val">Válido por</label><select id="ob-val" data-bind="validez">' + [30, 60, 90].map((d) => '<option value="' + d + '"' + (+o.validez === d ? ' selected' : '') + '>' + d + ' días</option>').join('') + '</select></div></div>' +
+        '<div class="field"><label for="ob-regalo">Regalo (si elegiste regalo)</label><input id="ob-regalo" data-bind="regalo" value="' + esc(o.regalo) + '"></div>' +
+        '<div class="field"><label for="ob-otro">Otro beneficio</label><input id="ob-otro" data-bind="otro" value="' + esc(o.otro) + '" placeholder="Ej.: envío sin cargo el primer mes"></div></div>' +
+        '<div><div class="step-label" style="margin-bottom:6px">Así lo ve el vecino</div><div class="list"><div class="row">' + catDot(o.rubro) + '<span class="body"><span class="name" id="pv-name">' + esc(o.nombre) + '</span><span class="benefit-line" id="pv-ben">' + esc(benefitText()) + '</span><span class="meta">' + esc(o.dir) + '</span></span><span class="dist"><b>2</b>cuadras</span></div></div></div>' +
+        '<div class="btn-row"><button class="btn ghost" data-action="obback">Atrás</button><button class="btn primary" data-action="obnext">Siguiente</button></div>';
+    } else if (o.step === 3) {
+      body = '<div class="step-label">Paso 3 de 4</div><h3 style="font-size:22px">Agendá a Team Nexia</h3><p style="color:var(--muted);font-size:14px">Así, cuando un cliente te pregunte por una inmobiliaria, ya nos tenés a mano. Cada persona que nos mandes suma para tu nivel.</p>' +
+        '<div class="card"><div class="contact-card"><span class="avatar">TN</span><span class="body"><b>Team Nexia · Inmobiliaria</b><span>Inmobiliaria amiga de ' + esc(o.nombre) + '</span><span class="sel-text" id="nx-contact">Team Nexia · Inmobiliaria · 11 5555-0100</span></span></div>' +
+        '<button class="btn ghost block" data-action="copy" data-target="nx-contact">' + ic('copy') + 'Copiar contacto</button></div>' +
+        '<div class="card"><h3>Tus compromisos</h3>' +
+        '<label class="check"><input type="checkbox" data-bind="agenda"' + (o.agenda ? ' checked' : '') + '><span>Guardé a Team Nexia en mis contactos de WhatsApp.</span></label>' +
+        '<label class="check"><input type="checkbox" data-bind="codigo"' + (o.codigo ? ' checked' : '') + '><span>Si un cliente me pregunta por vender, alquilar o tasar, le paso mi código de comercio amigo.</span></label>' +
+        '<label class="check"><input type="checkbox" data-bind="reporte"' + (o.reporte ? ' checked' : '') + '><span>Quiero recibir el reporte mensual de vecinos que me mandó Nexia.</span></label></div>' +
+        '<p id="ob3-err" class="pill warn" hidden>Marcá los dos primeros compromisos para seguir.</p>' +
+        '<div class="btn-row"><button class="btn ghost" data-action="obback">Atrás</button><button class="btn primary" data-action="obnext">Terminar alta</button></div>';
+    } else {
+      const code = codeFor(o.nombre);
+      body = '<div class="step-label">Listo</div><h3 style="font-size:24px">¡' + esc(o.nombre) + ' ya es Comercio Amigo!</h3><p style="color:var(--muted);font-size:14px">Team Nexia revisa la ficha y en 24 h aparecés en el mapa. Este es tu código de referidos.</p>' +
+        stickerHTML(o.nombre) +
+        '<div class="card"><h3>Mensaje para tus clientes</h3><p class="sub">Para tu estado o lista de difusión de WhatsApp.</p><textarea id="msg-cli" class="field" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--app-bg);min-height:120px;font-size:13.5px" aria-label="Mensaje para clientes">' + esc(clientMsg(o.nombre)) + '</textarea><button class="btn ghost block" data-action="copy" data-target="msg-cli">' + ic('copy') + 'Copiar mensaje</button></div>' +
+        '<button class="btn primary block" data-action="tab" data-tab="panel">Ver mi panel</button><button class="link-btn" data-action="obreset" style="justify-self:center">Empezar otra alta de ejemplo</button>';
+    }
+    return '<div class="pad">' + step + body + '</div>';
+  };
+  function clientMsg(name) {
+    return '¿Te estás por mudar, vender o alquilar? En ' + name + ' somos Comercio Amigo de Team Nexia. Escribiles con nuestro código ' + codeFor(name) + ' y te atienden con prioridad: ' + shopLink(name);
+  }
+  function stickerHTML(name) {
+    return '<div class="sticker"><div><div class="k">Comercio Amigo</div><h4>¿Te mudás, vendés o alquilás?</h4><p>Escaneá y Team Nexia te contacta hoy.</p><span class="code">' + codeFor(name) + '</span></div><div class="qr-holder">' + qr(shopLink(name)) + '</div></div>';
+  }
+  C.kit = function () {
+    const name = S.ob.done ? S.ob.nombre : 'Panadería La Espiga';
+    return '<div class="pad"><h3 style="font-size:20px">Tu kit de Comercio Amigo</h3><p style="color:var(--muted);font-size:14px">Todo lo que necesitás para que tus clientes lleguen a Team Nexia con tu código.</p>' +
+      '<div><div class="step-label" style="margin-bottom:6px">Calco de vitrina</div>' + stickerHTML(name) + '</div>' +
+      '<div class="card"><h3>Frase para el mostrador</h3><p id="frase" style="font-size:14.5px">“¿Se están por mudar o vender? Nosotros trabajamos con Team Nexia. Escaneá el QR de la vitrina y te llaman hoy.”</p><button class="btn ghost small" data-action="copy" data-target="frase">' + ic('copy') + 'Copiar</button></div>' +
+      '<div class="card"><h3>Mensaje para WhatsApp</h3><textarea id="msg-kit" aria-label="Mensaje para WhatsApp" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--app-bg);min-height:110px;font-size:13.5px;width:100%">' + esc(clientMsg(name)) + '</textarea><button class="btn ghost small" data-action="copy" data-target="msg-kit">' + ic('copy') + 'Copiar</button></div>' +
+      '<div class="card"><h3>Cuando llega un vecino con pase</h3><ol style="margin:0;padding-left:18px;font-size:14px;display:grid;gap:4px"><li>Escaneás el QR del pase o del cupón.</li><li>Aplicás el beneficio.</li><li>Queda registrado en tu panel y en el reporte del mes.</li></ol></div></div>';
+  };
+  C.panel = function () {
+    const s = shops.find((x) => x.id === 'espiga');
+    const name = S.ob.done ? S.ob.nombre : s.name;
+    const refs = S.myRefs.length, ops = S.myRefs.filter((r) => r.status === 'Operación concretada').length;
+    const tier = ops >= 1 ? 'Embajador' : refs >= 3 ? 'Socio' : 'Amigo';
+    const pill = (st) => st === 'Operación concretada' ? 'ok' : st === 'Nuevo' ? 'warn' : 'neutral';
+    return '<div class="pad"><div><div class="step-label">' + esc(name) + '</div><h3 style="font-size:22px">Tu panel · octubre</h3></div>' +
+      '<div class="stats"><div class="stat"><b>' + s.sent + '</b><span>vecinos nuevos te mandamos</span></div><div class="stat"><b>' + s.used + '</b><span>usaron tu beneficio</span></div><div class="stat"><b>' + refs + '</b><span>contactos que nos referiste</span></div></div>' +
+      '<div class="card"><div class="sec-head"><h3>Tu nivel: ' + tier + '</h3><span class="pill ok">' + ic('check') + 'Activo</span></div>' +
+      '<div class="tiers">' +
+      '<div class="tier reached"><span class="medal">A</span><span><b>Amigo</b><span>Ficha en el mapa y calco de vitrina</span></span>' + ic('check') + '</div>' +
+      '<div class="tier' + (refs >= 3 ? ' reached' : '') + '"><span class="medal">S</span><span><b>Socio · 3 referidos</b><span>Destacado en tu rubro y posteo en redes de Nexia</span></span>' + (refs >= 3 ? ic('check') : '<span class="pill neutral">' + refs + '/3</span>') + '</div>' +
+      '<div class="tier' + (ops >= 1 ? ' reached' : '') + '"><span class="medal">E</span><span><b>Embajador · 1 operación</b><span>Placa, canasta de agradecimiento y lugar en la tarjeta de llaves</span></span>' + (ops >= 1 ? ic('check') : '<span class="pill neutral">0/1</span>') + '</div></div></div>' +
+      (S.refForm ? '<div class="card" id="refCard"><h3>Referir a alguien</h3><div class="field"><label for="rf-name">Nombre</label><input id="rf-name" placeholder="Ej.: Carla Méndez"></div><div class="field"><label for="rf-tel">Teléfono</label><input id="rf-tel" inputmode="tel" placeholder="11 ..."></div><div class="field"><label for="rf-need">Qué necesita</label><select id="rf-need"><option>Vender</option><option>Alquilar</option><option>Comprar</option><option>Tasar</option></select></div><p id="rf-err" class="pill warn" hidden>Escribí al menos el nombre.</p><div class="btn-row"><button class="btn ghost" data-action="refcancel">Cancelar</button><button class="btn primary" data-action="refsend">Enviar a Team Nexia</button></div></div>'
+        : '<button class="btn accent block" data-action="refopen">' + ic('plus') + 'Referir a alguien</button>') +
+      '<div class="sec-head"><h3>Tus referidos</h3></div><div class="list">' + S.myRefs.map((r) => '<div class="row"><span class="avatar" style="width:36px;height:36px;font-size:13px">' + esc(r.name.split(' ').map((w) => w[0]).join('').slice(0, 2)) + '</span><span class="body"><span class="name">' + esc(r.name) + '</span><span class="meta">' + esc(r.need) + ' · ' + esc(r.when) + '</span></span><span class="pill ' + pill(r.status) + '">' + esc(r.status) + '</span></div>').join('') + '</div></div>';
+  };
+
+  // ---------- vistas: Team Nexia ----------
+  const N = {};
+  N.catalogo = function () {
+    const st = (s) => s.status === 'activo' ? '<span class="pill ok">Activo</span>' : s.status === 'pendiente' ? '<button class="pill warn" style="border:0" data-action="approve" data-id="' + s.id + '">Aprobar</button>' : '<span class="pill neutral">Invitado</span>';
+    const counts = { activo: 0, pendiente: 0, invitado: 0 }; shops.forEach((s) => counts[s.status]++);
+    return '<div class="pad"><div><div class="step-label">Team Nexia</div><h3 style="font-size:22px">Catálogo del barrio</h3></div>' +
+      '<div class="stats"><div class="stat"><b>' + counts.activo + '</b><span>activos</span></div><div class="stat"><b>' + counts.pendiente + '</b><span>para revisar</span></div><div class="stat"><b>' + counts.invitado + '</b><span>invitados</span></div></div>' +
+      '<div class="card"><h3>Invitar un comercio</h3><p class="sub">Generá el link de alta y mandalo después de la visita.</p><div class="field"><label for="inv-name">Nombre del local</label><input id="inv-name" value="' + esc(S.invite.nombre) + '"></div>' +
+      '<div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center"><div class="qr-box sm" id="inv-qr">' + qr('https://barrio.teamnexia.com/alta/' + slug(S.invite.nombre)) + '</div><div style="min-width:0;display:grid;gap:6px"><span class="sel-text" id="inv-link" style="word-break:break-all;font-size:12px">https://barrio.teamnexia.com/alta/' + slug(S.invite.nombre) + '</span><button class="btn ghost small" data-action="copy" data-target="inv-msg">' + ic('copy') + 'Copiar invitación</button></div></div>' +
+      '<textarea id="inv-msg" aria-label="Mensaje de invitación" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--app-bg);min-height:100px;font-size:13px;width:100%">' + esc(inviteMsg(S.invite.nombre)) + '</textarea></div>' +
+      '<div class="list">' + byDist(shops).map((s) => '<div class="row">' + catDot(s.cat) + '<span class="body"><span class="name">' + esc(s.name) + '</span><span class="meta">' + esc(s.ben) + ' · ' + esc(s.addr) + '</span></span>' + st(s) + '</div>').join('') + '</div></div>';
+  };
+  function inviteMsg(name) {
+    return 'Hola, equipo de ' + (name || 'tu local') + '. Gracias por recibirnos. Este es el link para sumarse como Comercio Amigo de Team Nexia: https://barrio.teamnexia.com/alta/' + slug(name || 'local') + ' . Son 3 minutos. Cada familia que se muda con nosotros va a ver su local y su beneficio en el mapa del barrio.';
+  }
+  N.compartir = function () {
+    const sh = S.share, link = vecinoLink(sh.nombres, sh.dir);
+    const msg = '¡Bienvenidos a ' + sh.dir + ', ' + sh.nombres + '! Les armamos el mapa de comercios amigos del barrio, con beneficios por ser vecinos nuevos. Es su Pase Vecino Nexia, válido hasta el ' + fmtDate(sh.fecha, 90) + ': ' + link;
+    return '<div class="pad"><div><div class="step-label">Team Nexia</div><h3 style="font-size:22px">Compartir el catálogo</h3></div>' +
+      '<div class="card"><h3>Pase para un vecino nuevo</h3><p class="sub">Se manda el día de la entrega de llaves.</p>' +
+      '<div class="field"><label for="sh-n">Nombres</label><input id="sh-n" data-share="nombres" value="' + esc(sh.nombres) + '"></div><div class="field"><label for="sh-d">Dirección nueva</label><input id="sh-d" data-share="dir" value="' + esc(sh.dir) + '"></div>' +
+      '<div class="field"><label for="sh-f">Fecha de mudanza</label><input id="sh-f" type="date" data-share="fecha" value="' + esc(sh.fecha) + '"></div>' +
+      '<div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center"><div class="qr-box sm">' + qr(link) + '</div><div style="min-width:0;display:grid;gap:6px"><span class="sel-text" id="sh-link" style="word-break:break-all;font-size:12px">' + esc(link) + '</span><button class="btn ghost small" data-action="copy" data-target="sh-link">' + ic('copy') + 'Copiar link</button></div></div>' +
+      '<textarea id="sh-msg" aria-label="Mensaje de WhatsApp" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--app-bg);min-height:110px;font-size:13px;width:100%">' + esc(msg) + '</textarea>' +
+      '<div class="btn-row"><button class="btn primary" data-action="copy" data-target="sh-msg">' + ic('copy') + 'Copiar mensaje</button><button class="btn ghost" data-action="preview">Ver como vecino</button></div></div>' +
+      '<div class="card"><h3>Tarjeta para el llavero</h3><p class="sub">Se imprime y va con las llaves.</p><div class="sticker" style="grid-template-columns:1fr auto"><div><div class="k">' + ic('key') + ' Bienvenidos</div><h4>' + esc(sh.nombres) + '</h4><p>Escaneen y conozcan los comercios amigos de su barrio nuevo.</p></div><div class="qr-holder">' + qr(link) + '</div></div></div>' +
+      '<div class="card"><h3>Catálogo abierto</h3><p class="sub">Para carteles de “Vendido” y “Alquilado”, la bio de Instagram y las visitas.</p><div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center"><div class="qr-box sm">' + qr('https://barrio.teamnexia.com/catalogo') + '</div><div style="min-width:0;display:grid;gap:6px"><span class="sel-text" id="cat-link" style="font-size:12px;word-break:break-all">https://barrio.teamnexia.com/catalogo</span><button class="btn ghost small" data-action="copy" data-target="cat-link">' + ic('copy') + 'Copiar link</button></div></div></div></div>';
+  };
+  N.referidos = function () {
+    const act = active();
+    const tot = act.reduce((a, s) => ({ refs: a.refs + s.refs, ops: a.ops + s.ops, used: a.used + s.used }), { refs: 0, ops: 0, used: 0 });
+    const rows = act.slice().sort((a, b) => b.refs - a.refs || b.ops - a.ops);
+    const tier = (s) => s.ops >= 1 ? 'Embajador' : s.refs >= 3 ? 'Socio' : 'Amigo';
+    return '<div class="pad"><div><div class="step-label">Team Nexia · últimos 90 días</div><h3 style="font-size:22px">Referidos de los comercios</h3></div>' +
+      '<div class="stats"><div class="stat"><b>' + tot.refs + '</b><span>contactos referidos</span></div><div class="stat"><b>' + tot.ops + '</b><span>operaciones</span></div><div class="stat"><b>' + tot.used + '</b><span>cupones usados</span></div></div>' +
+      '<div class="card"><h3>Ranking de locales</h3><div class="table-wrap"><table class="tbl"><thead><tr><th>Local</th><th class="num">Ref.</th><th class="num">Op.</th><th>Nivel</th></tr></thead><tbody>' +
+      rows.map((s) => '<tr><td>' + esc(s.name) + '</td><td class="num">' + s.refs + '</td><td class="num">' + s.ops + '</td><td><span class="pill ' + (tier(s) === 'Amigo' ? 'neutral' : 'ok') + '">' + tier(s) + '</span></td></tr>').join('') + '</tbody></table></div></div>' +
+      '<div class="card"><h3>Últimos contactos</h3><div class="list" style="border:0">' + LEADS.map((l) => '<div class="row" style="padding-inline:0"><span class="body"><span class="name">' + esc(l.name) + '</span><span class="meta">' + esc(l.need) + ' · ' + esc(l.when) + '</span></span><span class="pill neutral" style="font-family:var(--font-mono)">' + esc(l.from) + '</span></div>').join('') + '</div><p class="sub">Responder en menos de 2 h hábiles y avisarle al local que su contacto llegó.</p></div></div>';
+  };
+
+  // ---------- navegación ----------
+  const TABS = {
+    vecino: [['inicio', 'Inicio', 'home'], ['mapa', 'Mapa', 'map'], ['beneficios', 'Beneficios', 'tag'], ['pase', 'Mi pase', 'ticket']],
+    comercio: [['alta', 'Sumarme', 'store'], ['kit', 'Mi kit', 'kit'], ['panel', 'Mi panel', 'chart']],
+    nexia: [['catalogo', 'Catálogo', 'list'], ['compartir', 'Compartir', 'share'], ['referidos', 'Referidos', 'users']]
+  };
+  const VIEWS = { vecino: V, comercio: C, nexia: N };
+  const HINTS = {
+    vecino: 'Lo que ve la familia que se muda cuando abre su link: mapa, beneficios y su pase.',
+    comercio: 'Lo que ve el local: alta en 4 pasos, su kit de vitrina y su panel de referidos.',
+    nexia: 'Lo que ve Team Nexia: catálogo, links y QR para compartir, y referidos por local.'
+  };
+
+  function render(keepScroll) {
+    const scr = $('#screen'); const top = scr.scrollTop;
+    const t = S.tab[S.mode];
+    scr.innerHTML = VIEWS[S.mode][t]();
+    if (keepScroll) scr.scrollTop = top; else scr.scrollTop = 0;
+    $('#tabbar').innerHTML = TABS[S.mode].map(([id, label, icon]) => '<button type="button" data-action="tab" data-tab="' + id + '"' + (id === t ? ' aria-current="page"' : '') + '>' + ic(icon) + label + '</button>').join('');
+    document.querySelectorAll('.mode-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)));
+    $('#modeHint').textContent = HINTS[S.mode];
+    $('#overlay').innerHTML = S.mode === 'vecino' && S.sheet ? sheetHTML() : '';
+    $('#phone').style.setProperty('--app-top', S.mode === 'vecino' && t === 'inicio' ? 'var(--brand)' : 'transparent');
+    $('.statusbar').style.color = S.mode === 'vecino' && t === 'inicio' ? 'var(--on-brand)' : 'var(--ink)';
+  }
+
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-action]'); if (!el) return;
+    const a = el.dataset.action;
+    if (a === 'mode') { S.mode = el.dataset.mode; S.sheet = null; render(); }
+    else if (a === 'tab') { S.tab[S.mode] = el.dataset.tab; S.sheet = null; render(); }
+    else if (a === 'cat') { S.cat = el.dataset.cat; render(true); }
+    else if (a === 'open') { S.sheet = el.dataset.id; S.coupon = false; render(true); }
+    else if (a === 'close') { S.sheet = null; S.coupon = false; render(true); }
+    else if (a === 'coupon') { S.coupon = true; render(true); }
+    else if (a === 'uncoupon') { S.coupon = false; render(true); }
+    else if (a === 'markused') { S.used.add(el.dataset.id); const s = shops.find((x) => x.id === el.dataset.id); if (s) s.used++; render(true); toast('Beneficio registrado'); }
+    else if (a === 'copy') copyFrom(el.dataset.target);
+    else if (a === 'obnext') {
+      if (S.ob.step === 3 && !(S.ob.agenda && S.ob.codigo)) { $('#ob3-err').hidden = false; return; }
+      if (S.ob.step === 3) finishOnboarding();
+      S.ob.step = Math.min(4, S.ob.step + 1); render();
+    }
+    else if (a === 'obback') { S.ob.step = Math.max(1, S.ob.step - 1); render(); }
+    else if (a === 'obreset') { S.ob.step = 1; S.ob.done = false; S.ob.agenda = false; S.ob.codigo = false; S.ob.nombre = 'Café Los Tilos'; S.ob.rubro = 'cafe'; S.ob.dir = 'Paraguay 120'; render(); }
+    else if (a === 'approve') { const s = shops.find((x) => x.id === el.dataset.id); if (s) { s.status = 'activo'; toast(s.name + ' ya aparece en el mapa'); } render(true); }
+    else if (a === 'refopen') { S.refForm = true; render(true); const i = $('#rf-name'); if (i) i.focus(); }
+    else if (a === 'refcancel') { S.refForm = false; render(true); }
+    else if (a === 'refsend') {
+      const n = $('#rf-name').value.trim(); if (!n) { $('#rf-err').hidden = false; return; }
+      S.myRefs.unshift({ name: n, need: $('#rf-need').value, status: 'Nuevo', when: 'recién' });
+      LEADS.unshift({ name: n, need: $('#rf-need').value, from: codeFor(S.ob.done ? S.ob.nombre : 'Panadería La Espiga'), when: 'recién' });
+      S.refForm = false; render(true); toast('Enviado. Team Nexia lo contacta hoy.');
+    }
+    else if (a === 'preview') { S.vecino = { nombres: S.share.nombres || 'Vecino', dir: S.share.dir || 'tu casa nueva', mudanza: S.share.fecha || '2026-10-26' }; S.mode = 'vecino'; S.tab.vecino = 'inicio'; render(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.pin')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+    if (e.key === 'Escape' && S.sheet) { S.sheet = null; render(true); }
+  });
+
+  function finishOnboarding() {
+    const o = S.ob; o.done = true;
+    const id = slug(o.nombre);
+    if (!shops.some((s) => s.id === id) && !shops.some((s) => s.name === o.nombre)) {
+      shops.push({ id, name: o.nombre, cat: o.rubro, rubro: CATS[o.rubro].one, ben: benefitText(), det: '', x: 130 + Math.round(Math.random() * 60), y: 250, hours: o.horario, addr: o.dir, tel: o.wpp, status: 'pendiente', sent: 0, used: 0, refs: 0, ops: 0 });
+    }
+  }
+
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'q') { S.q = t.value; const scr = $('#screen'); const pos = t.selectionStart; render(true); const q = $('#q'); q.focus(); try { q.setSelectionRange(pos, pos); } catch (err) {} return; }
+    if (t.dataset.bind) {
+      const k = t.dataset.bind;
+      S.ob[k] = t.type === 'checkbox' ? t.checked : (k === 'pct' || k === 'validez') ? +t.value : t.value;
+      if (k === 'agenda' || k === 'codigo') { const er = $('#ob3-err'); if (er) er.hidden = true; }
+      const pb = $('#pv-ben'); if (pb) pb.textContent = benefitText();
+      const pn = $('#pv-name'); if (pn) pn.textContent = S.ob.nombre;
+      return;
+    }
+    if (t.dataset.share) { S.share[t.dataset.share] = t.value; }
+    if (t.id === 'inv-name') { S.invite.nombre = t.value; const l = 'https://barrio.teamnexia.com/alta/' + slug(t.value); $('#inv-link').textContent = l; $('#inv-qr').innerHTML = qr(l); $('#inv-msg').value = inviteMsg(t.value); }
+  });
+  document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.dataset.share) { const id = t.id; render(true); const el = document.getElementById(id); if (el) el.focus(); }
+    if (t.dataset.bind === 'rubro' || t.dataset.bind === 'tipo') render(true);
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
