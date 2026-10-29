@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Ritmo — Running, comidas y sueño</title>
   <meta name="description" content="Registra tus kilómetros, tiempos, comidas, macros y horas de sueño. Calcula macros de comidas y recetas con IA.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0E1013" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
@@ -48,6 +48,9 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <!-- generados en el despliegue (npm run build): cliente de Supabase y configuración pública -->
+  <script src="vendor/supabase.js"></script>
+  <script src="js/config.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

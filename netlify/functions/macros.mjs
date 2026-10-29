@@ -1,9 +1,10 @@
 /* Ritmo — estimación de macros con Claude
    POST /api/macros  { text: "2 huevos y una tostada", servings?: 4 }
    → { items: [{ name, quantity, kcal, p, c, f }], total: { kcal, p, c, f }, notes }
-   La API key vive solo en el servidor (variable ANTHROPIC_API_KEY de Netlify). */
+   Requiere sesión de Supabase. La API key vive solo en el servidor (ANTHROPIC_API_KEY). */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { getUser, sameOrigin, ConfigError } from "../lib/server.mjs";
 
 const MAX_CHARS = 3000;
 
@@ -51,10 +52,14 @@ const num = (v) => (Number.isFinite(v) && v > 0 ? Math.round(v * 10) / 10 : 0);
 export default async (req) => {
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
-  // solo peticiones desde la propia web
-  const origin = req.headers.get("origin");
-  if (origin && new URL(origin).host !== new URL(req.url).host) {
-    return json({ error: "Origen no permitido" }, 403);
+  if (!sameOrigin(req)) return json({ error: "Origen no permitido" }, 403);
+
+  // solo Sofi y Flor: la IA cuesta dinero
+  try {
+    if (!(await getUser(req))) return json({ error: "Inicia sesión para usar la IA" }, 401);
+  } catch (err) {
+    if (err instanceof ConfigError) return json({ error: "La base de datos no está configurada en el servidor" }, 503);
+    throw err;
   }
 
   let body;

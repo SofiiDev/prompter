@@ -2,13 +2,15 @@
    Red primero para que las actualizaciones lleguen enseguida;
    si no hay conexión se sirve la copia en caché (funciona offline). */
 
-const CACHE = "ritmo-v1";
+const CACHE = "ritmo-v2";
 const ASSETS = [
   "./",
   "index.html",
   "css/styles.css",
   "js/app.js",
   "js/store.js",
+  "js/config.js",
+  "vendor/supabase.js",
   "manifest.webmanifest",
   "icons/icon.svg",
   "icons/icon-maskable.svg",

@@ -2,7 +2,7 @@
    Vistas: Hoy · Correr · Comidas · Recetas · Sueño (+ Ajustes).
    Todo el contenido del usuario se inserta como texto (nunca HTML). */
 
-import { db, upsert, remove, setGoals, exportJSON, importJSON, wipe, uid } from "./store.js";
+import { sb, db, account, loadAll, upsert, remove, setGoals, exportJSON, importJSON, wipe, uid, flush, onWriteError } from "./store.js";
 
 /* ============ utilidades ============ */
 
@@ -18,6 +18,9 @@ const ICON = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   left: '<path d="m15 18-6-6 6-6"/>',
   right: '<path d="m9 18 6-6-6-6"/>',
+  strava: '<path d="M10 3 4 15h4l2-4 2 4h4L10 3Z"/><path d="m15 15-2 4h3l1.5-3 1.5 3h3l-4-8"/>',
+  logout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/>',
+  google: '<path d="M20.5 12.2c0-.6-.1-1.2-.2-1.7H12v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.6-3.9 2.6-6.5Z"/><path d="M12 21c2.4 0 4.5-.8 5.9-2.2L15 16.5c-.8.5-1.8.9-3 .9-2.3 0-4.3-1.6-5-3.7H4v2.3A9 9 0 0 0 12 21Z"/><path d="M7 13.7a5.4 5.4 0 0 1 0-3.4V8H4a9 9 0 0 0 0 8l3-2.3Z"/><path d="M12 6.6c1.3 0 2.5.5 3.4 1.3L18 5.4A9 9 0 0 0 4 8l3 2.3c.7-2.1 2.7-3.7 5-3.7Z"/>',
   spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/>',
 };
 const icon = (name) =>
@@ -106,7 +109,7 @@ function closeSheet() { if (sheet.open) sheet.close(); }
 /* ============ piezas de formulario ============ */
 
 function field(label, input, hint) {
-  const idv = input.id || (input.id = "f" + uid());
+  const idv = input.id || (input.id = "f" + uid().slice(0, 8));
   return h("div", { class: "field" }, h("label", { for: idv }, label), input, hint && h("span", { class: "hint" }, hint));
 }
 
@@ -133,10 +136,27 @@ function segmented(name, options, value, label) {
 
 /* ============ IA: estimación de macros ============ */
 
+async function authHeader() {
+  const { data } = await sb.auth.getSession();
+  return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
+}
+
+async function api(path, body) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeader()) },
+    body: JSON.stringify(body || {}),
+  });
+  let data = null;
+  try { data = await res.json(); } catch { /* respuesta no JSON */ }
+  if (!res.ok) throw new Error(data?.error || "No se pudo conectar. Revisa tu conexión.");
+  return data;
+}
+
 async function estimateMacros(text, servings) {
   const res = await fetch("/api/macros", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await authHeader()) },
     body: JSON.stringify({ text, servings }),
   });
   let data = null;
@@ -477,6 +497,7 @@ function sleepForm(rec) {
 
 function settingsSheet() {
   const g = db.goals;
+  const prof = account.profile;
   const inputs = {
     kcal: numInput("kcal", g.kcal, { int: true }), p: numInput("p", g.p, { int: true }),
     c: numInput("c", g.c, { int: true }), f: numInput("f", g.f, { int: true }),
@@ -486,33 +507,61 @@ function settingsSheet() {
   fileIn.addEventListener("change", async () => {
     const file = fileIn.files[0];
     if (!file) return;
+    toast("Importando…");
     try {
-      importJSON(await file.text());
+      await importJSON(await file.text());
       closeSheet(); toast("Datos importados"); render();
-    } catch {
-      toast("El archivo no es una copia válida de Ritmo");
+    } catch (err) {
+      console.error(err);
+      toast(err instanceof SyntaxError ? "El archivo no es una copia válida de Ritmo" : "No se pudo importar. Inténtalo de nuevo.");
     }
   });
+
+  const linked = Boolean(prof?.strava_athlete_id);
+  const strava = h("div", { class: "strava-box" },
+    h("div", { class: "strava-head" },
+      h("span", { class: "badge strava", icon: "strava" }),
+      h("div", { class: "item-main" },
+        h("strong", {}, linked ? "Strava conectado" : "Strava"),
+        h("p", { class: "muted" }, linked
+          ? (prof.strava_synced_at ? `Última sincronización: ${new Date(prof.strava_synced_at).toLocaleString("es", { dateStyle: "medium", timeStyle: "short" })}` : "Aún sin sincronizar")
+          : "Conéctalo para importar las carreras de tu Garmin y entrar con Strava."))),
+    linked
+      ? h("div", { class: "actions" },
+          h("button", { type: "button", class: "btn ghost", onclick: (e) => syncStrava({ button: e.currentTarget }) }, "Sincronizar"),
+          confirmButton("Desconectar", "¿Seguro? Toca otra vez", disconnectStrava, "btn danger"))
+      : h("button", { type: "button", class: "btn strava-btn block", icon: "strava", onclick: connectStrava }, "Conectar con Strava"),
+  );
 
   const form = sheetForm(() => {
     setGoals(Object.fromEntries(Object.entries(inputs).map(([k, i]) => [k, readNum(i)])));
     closeSheet(); toast("Objetivos guardados"); render();
   },
-    h("h3", { style: "margin-bottom:12px" }, "Objetivos diarios"),
+    h("div", { class: "account" },
+      h("span", { class: "avatar", "aria-hidden": "true" }, (prof?.name || "?").charAt(0)),
+      h("div", { class: "item-main" }, h("strong", {}, prof?.name || ""), h("p", { class: "muted" }, prof?.email || "")),
+      h("button", { type: "button", class: "btn ghost", icon: "logout", onclick: signOut }, "Salir")),
+
+    h("h3", { class: "section-title" }, "Garmin y Strava"),
+    strava,
+
+    h("h3", { class: "section-title" }, "Objetivos diarios"),
     field("Calorías (kcal)", inputs.kcal),
     h("div", { class: "row" }, field("Proteína (g)", inputs.p), field("Carbos (g)", inputs.c), field("Grasas (g)", inputs.f)),
     h("div", { class: "row" }, field("Sueño (h/noche)", inputs.sleep), field("Km por semana", inputs.km)),
     h("button", { type: "submit", class: "btn primary block" }, "Guardar objetivos"),
 
-    h("h3", { style: "margin:32px 0 8px" }, "Tus datos"),
+    h("h3", { class: "section-title" }, "Tus datos"),
     h("p", { class: "muted", style: "margin-bottom:12px" },
-      "Todo se guarda solo en este dispositivo. Haz una copia de seguridad para no perderlo o pasarlo a otro móvil."),
+      "Se guardan en la nube y los ves en cualquier dispositivo con tu cuenta. Las recetas son compartidas entre Sofi y Flor; el resto es privado."),
     h("div", { class: "actions" },
       h("button", { type: "button", class: "btn ghost", onclick: downloadBackup }, "Exportar"),
       h("button", { type: "button", class: "btn ghost", onclick: () => fileIn.click() }, "Importar")),
     fileIn,
-    confirmButton("Borrar todos los datos", "Se borrará todo. Toca otra vez",
-      () => { wipe(); closeSheet(); toast("Datos borrados"); render(); }, "btn danger block wipe"),
+    confirmButton("Borrar mis registros", "Se borrarán carreras, comidas y sueño. Toca otra vez", async () => {
+      try { await wipe(); closeSheet(); toast("Registros borrados"); render(); }
+      catch { toast("No se pudieron borrar. Inténtalo de nuevo."); }
+    }, "btn danger block wipe"),
     h("p", { class: "hint", style: "margin-top:24px" },
       "Las estimaciones de la IA son aproximadas: revísalas y ajústalas si conoces los valores exactos de la etiqueta."),
   );
@@ -525,6 +574,48 @@ function downloadBackup() {
   document.body.append(a);
   a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+/* ============ Strava ============ */
+
+async function connectStrava() {
+  try {
+    const { url } = await api("/api/strava/start");
+    location.href = url;
+  } catch (err) {
+    toast(err.message);
+  }
+}
+
+async function disconnectStrava() {
+  try {
+    await api("/api/strava/sync", { disconnect: true });
+    account.profile.strava_athlete_id = null;
+    account.profile.strava_synced_at = null;
+    closeSheet(); toast("Strava desconectado");
+  } catch (err) {
+    toast(err.message);
+  }
+}
+
+let syncing = false;
+async function syncStrava({ button, silent } = {}) {
+  if (syncing) return;
+  syncing = true;
+  if (button) { button.disabled = true; button.textContent = "Sincronizando…"; }
+  try {
+    const { added } = await api("/api/strava/sync");
+    await flush();
+    await loadAll();
+    if (button) closeSheet();
+    if (added || !silent) toast(added ? `${added} ${added === 1 ? "carrera nueva" : "carreras nuevas"} de Strava` : "Todo al día con Strava");
+    render();
+  } catch (err) {
+    if (!silent) toast(err.message);
+  } finally {
+    syncing = false;
+    if (button) { button.disabled = false; button.textContent = "Sincronizar"; }
+  }
 }
 
 /* ============ componentes de vista ============ */
@@ -606,7 +697,12 @@ function runItem(r) {
       h("span", { class: "badge run", icon: "runs" }),
       h("span", { class: "item-main" },
         h("span", { class: "item-title" }, `${fmt1(r.km)} km · ${capitalize(r.type)}`),
-        h("span", { class: "item-sub", style: "display:block" }, dayLabel(r.date), r.notes && ` · ${r.notes}`)),
+        h("span", { class: "item-sub", style: "display:block" },
+          r.source === "strava" && h("span", { class: "tag" }, "Strava"),
+          dayLabel(r.date),
+          r.elevation ? ` · ↗ ${fmt0(r.elevation)} m` : "",
+          r.avgHr ? ` · ♥ ${fmt0(r.avgHr)}` : "",
+          r.notes && ` · ${r.notes}`)),
       h("span", { class: "item-end num" }, r.sec ? fmtDur(r.sec) : "—", h("small", {}, fmtPace(r.sec, r.km)))));
 }
 
@@ -654,7 +750,8 @@ function viewToday() {
 
   return [
     h("p", { class: "muted", style: "margin:-4px 0 16px" },
-      capitalize(new Date().toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" }))),
+      `Hola, ${account.profile?.name || ""} · `,
+      new Date().toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })),
     nutritionCard(meals, "Nutrición"),
     h("section", { class: "card", "aria-label": "Resumen de la semana" },
       h("div", { class: "card-head" }, h("h2", {}, "Esta semana")),
@@ -815,8 +912,146 @@ function render() {
   viewEl.replaceChildren(...[v.render()].flat(Infinity).filter(Boolean));
 }
 
-window.addEventListener("hashchange", () => go(location.hash.slice(1)));
-go(location.hash.slice(1) || "today");
+window.addEventListener("hashchange", () => { if (account.user) go(location.hash.slice(1)); });
+
+/* ============ sesión ============ */
+
+const LOGIN_ERRORS = {
+  strava_unlinked: "Esa cuenta de Strava no está vinculada. Entra con Google y conecta Strava en Ajustes; después podrás entrar con Strava.",
+  strava_denied: "Cancelaste el acceso a Strava.",
+  strava_scope: "Para importar tus carreras, Strava necesita permiso para leer tus actividades.",
+  strava_state: "El enlace de Strava caducó. Inténtalo de nuevo.",
+  strava_token: "Strava no respondió. Inténtalo de nuevo.",
+  strava_save: "No se pudo guardar la conexión con Strava.",
+  strava_login: "No se pudo iniciar sesión con Strava. Prueba con Google.",
+  denied: "Ritmo es privada: ese email no tiene acceso.",
+};
+
+function setChrome(signedIn) {
+  document.body.classList.toggle("signed-out", !signedIn);
+}
+
+function renderLogin(errorKey) {
+  setChrome(false);
+  document.title = "Ritmo";
+  const status = h("p", { class: "error", role: "alert" }, errorKey ? LOGIN_ERRORS[errorKey] || "No se pudo iniciar sesión." : "");
+  const google = h("button", { type: "button", class: "btn block google-btn", icon: "google" }, "Continuar con Google");
+  google.addEventListener("click", async () => {
+    google.disabled = true;
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } },
+    });
+    if (error) { google.disabled = false; status.textContent = "No se pudo abrir Google. Inténtalo de nuevo."; }
+  });
+  viewEl.replaceChildren(h("section", { class: "login" },
+    h("img", { src: "icons/icon.svg", alt: "", width: 72, height: 72 }),
+    h("h1", {}, "Ritmo"),
+    h("p", { class: "muted" }, "Kilómetros, comidas y sueño de Sofi y Flor."),
+    h("div", { class: "login-actions" },
+      google,
+      h("a", { class: "btn block strava-btn", href: "/api/strava/start", icon: "strava" }, "Continuar con Strava")),
+    status,
+    h("p", { class: "hint" }, "Strava funciona como acceso cuando ya lo conectaste desde Ajustes.")));
+}
+
+function renderMessage(title, text) {
+  setChrome(false);
+  viewEl.replaceChildren(h("section", { class: "login" }, h("h1", {}, title), h("p", { class: "muted" }, text)));
+}
+
+let entering = null;
+function enterApp(user) {
+  if (account.user?.id === user.id && (account.loadedAt || entering)) return entering || Promise.resolve();
+  entering = startApp(user).finally(() => { entering = null; });
+  return entering;
+}
+
+async function startApp(user) {
+  account.user = user;
+  renderMessage("Ritmo", "Cargando tus datos…");
+  try {
+    await loadAll();
+  } catch (err) {
+    console.error(err);
+    account.user = null;
+    await sb.auth.signOut();
+    renderLogin("denied");
+    return;
+  }
+  setChrome(true);
+  go(location.hash.slice(1) || "today");
+  const prof = account.profile;
+  if (prof.strava_athlete_id && (!prof.strava_synced_at || Date.now() - new Date(prof.strava_synced_at) > 3 * 3600e3)) {
+    syncStrava({ silent: true });
+  }
+}
+
+async function signOut() {
+  await flush();
+  await sb.auth.signOut();
+  closeSheet();
+}
+
+/** Lee y limpia los parámetros con los que vuelve el login (Google o Strava). */
+function takeUrlParams() {
+  const q = new URLSearchParams(location.search);
+  const out = {
+    login: q.get("login"),
+    error: q.get("error"),
+    strava: q.get("strava"),
+    // errores de Supabase/Google (p. ej. el trigger rechazó un email no permitido)
+    authError: q.get("error_description") || new URLSearchParams(location.hash.slice(1)).get("error_description"),
+  };
+  if (location.search || out.authError) history.replaceState(null, "", location.pathname + (out.authError ? "" : location.hash));
+  return out;
+}
+
+onWriteError(() => {
+  toast("No se pudo guardar el último cambio. Revisa tu conexión.");
+  if (account.user) loadAll().then(render).catch(() => {});
+});
+
+// al volver a la app, refresca (las recetas pueden haber cambiado)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && account.user && Date.now() - account.loadedAt > 60_000) {
+    flush().then(loadAll).then(render).catch(() => {});
+  }
+});
+
+async function boot() {
+  if (!sb) {
+    renderMessage("Falta configurar Ritmo", "No se encontró la configuración de Supabase (js/config.js). Revisa las variables SUPABASE_URL y SUPABASE_ANON_KEY en Netlify y vuelve a desplegar.");
+    return;
+  }
+  // primero deja que Supabase lea la vuelta de Google (?code= o #access_token=) y luego limpia la URL
+  await sb.auth.getSession();
+  const params = takeUrlParams();
+  if (params.login) {
+    const { error } = await sb.auth.verifyOtp({ token_hash: params.login, type: "magiclink" });
+    if (error) params.error = "strava_login";
+  }
+  let first = true;
+  sb.auth.onAuthStateChange((event, session) => {
+    // los callbacks de Supabase no deben esperar a otras llamadas suyas
+    setTimeout(() => {
+      if (session?.user) {
+        enterApp(session.user).then(() => {
+          if (first && params.strava === "connected") { toast("Strava conectado"); syncStrava(); }
+          first = false;
+        });
+      } else {
+        account.user = null;
+        account.loadedAt = 0;
+        renderLogin(params.authError ? "denied" : params.error);
+        params.error = null;
+        params.authError = null;
+      }
+    }, 0);
+  });
+}
+
+boot();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

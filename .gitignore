@@ -1,3 +1,6 @@
 .DS_Store
 node_modules/
 .netlify/
+# generados por npm run build
+ritmo/vendor/
+ritmo/js/config.js

@@ -368,3 +368,39 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- sesión ---------- */
+body.signed-out .topbar, body.signed-out .tabbar { display: none; }
+body.signed-out { padding-bottom: 0; }
+
+.login {
+  min-height: 100dvh; max-width: 400px; margin: 0 auto;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--s3);
+  text-align: center; padding-block: var(--s6);
+}
+.login img { border-radius: 20px; margin-bottom: var(--s2); }
+.login-actions { display: flex; flex-direction: column; gap: var(--s3); width: 100%; margin-top: var(--s5); }
+.login .error:empty { display: none; }
+
+.google-btn { background: var(--surface); border-color: var(--line); color: var(--text); }
+.strava-btn { background: #FC4C02; color: #FFFFFF; }   /* naranja de marca de Strava */
+
+.account { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s2); }
+.account .btn { padding: 0 var(--s4); }
+.avatar {
+  width: 44px; height: 44px; flex: none; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+.section-title { margin: var(--s6) 0 var(--s3); }
+
+.strava-box { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s4); }
+.strava-head { display: flex; gap: var(--s3); align-items: center; margin-bottom: var(--s3); }
+.badge.strava { background: color-mix(in srgb, #FC4C02 14%, transparent); color: #FC4C02; }
+
+.tag {
+  display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: 6px;
+  font-size: var(--fs-xs); font-weight: 600; line-height: 1.6;
+  background: color-mix(in srgb, #FC4C02 14%, transparent); color: var(--run);
+}

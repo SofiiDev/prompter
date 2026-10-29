@@ -76,36 +76,97 @@ MIT
 
 # Ritmo (`/ritmo/`)
 
-App móvil (PWA instalable) para registrar entrenamiento, alimentación y descanso:
+App móvil privada (PWA instalable) para **Sofi y Flor**: carreras, comidas, recetas y sueño, con datos en **Supabase**, acceso con **Google** o **Strava**, importación automática de carreras de **Garmin** (vía Strava) y cálculo de macros con **IA**.
 
-- **Correr**: kilómetros, tiempo (h:min:s) y tipo de entrenamiento. Calcula ritmo por km y velocidad, km de la semana frente a tu objetivo, ritmo medio del mes y gráfico de los últimos 7 días.
-- **Comidas**: registra por momento del día (desayuno, comida, merienda, cena, snack) con proteína, carbohidratos, grasas y calorías. Tres formas de rellenar los macros:
-  1. **Con IA**: describe lo que comiste («2 huevos y una tostada con aguacate») y Claude desglosa cada alimento con sus macros.
-  2. **Desde una receta**: elige la receta y las porciones.
-  3. **A mano**: las calorías se calculan solas desde los macros (4/4/9 kcal/g).
-- **Recetas**: ingredientes uno por línea con cantidades para la receta completa; la IA calcula los macros de cada ingrediente y el total, y la app los divide por porción. Desde la receta registras una porción en un toque.
-- **Sueño**: hora de acostarte y levantarte (cruza medianoche), calidad 1–5, media de 7 días y déficit frente a tu objetivo.
-- **Hoy**: anillo de calorías restantes, barras de macros, resumen semanal y registro rápido.
-- **Ajustes**: objetivos diarios, exportar/importar copia de seguridad en JSON y borrar datos.
+## Qué hace
 
-Los datos se guardan solo en el dispositivo (`localStorage`) y la app funciona sin conexión (salvo el cálculo con IA).
+- **Correr**: km, tiempo y tipo. Ritmo por km, km semanales frente al objetivo, ritmo medio del mes y gráfico de 7 días. Las carreras de Strava llegan solas, con desnivel y pulso medio.
+- **Comidas**: macros a mano, desde una receta o estimados por IA a partir de una descripción («2 huevos y una tostada con aguacate»).
+- **Recetas**: ingredientes con cantidades; la IA calcula los macros totales y por porción. **Las recetas son compartidas** entre Sofi y Flor.
+- **Sueño**: horas, calidad, media de 7 días y déficit frente al objetivo.
+- **Ajustes**: objetivos, conexión con Strava, exportar/importar copia, borrar registros y cerrar sesión.
+
+Carreras, comidas, sueño y objetivos son **privados** de cada una (políticas RLS en Supabase).
+
+## Cómo funciona
+
+| Pieza | Dónde |
+|---|---|
+| App (HTML/CSS/JS sin framework) | `ritmo/` |
+| Base de datos, login y seguridad | Supabase — esquema en `supabase/schema.sql` |
+| IA de macros (Claude) | `netlify/functions/macros.mjs` → `POST /api/macros` |
+| Strava: login, conexión y sincronización | `netlify/functions/strava-*.mjs` → `/api/strava/*` |
+| Build (cliente de Supabase + configuración pública) | `scripts/build.mjs` (`npm run build`) |
+
+- Solo los dos emails de la tabla `allowed_emails` pueden crear cuenta: lo impide un trigger en la base de datos, no solo la app.
+- **Strava como login**: Strava no da el email, así que la primera vez se entra con Google y se conecta Strava en Ajustes; desde entonces el botón «Continuar con Strava» abre la sesión de esa cuenta.
+- **Garmin**: el reloj sincroniza con Garmin Connect, Garmin Connect envía cada actividad a Strava, y Ritmo importa las carreras nuevas al abrirla (cada 3 h) o con «Sincronizar».
+- Las claves secretas (service role de Supabase, Strava, Anthropic) solo existen en las funciones de Netlify.
+
+## Puesta en marcha (una sola vez)
+
+### 1. Supabase
+
+1. Crea un proyecto en <https://supabase.com>.
+2. Abre `supabase/schema.sql`, **cambia los dos emails** (`sofi@example.com`, `flor@example.com`) por los Gmail reales de Sofi y Flor, y ejecútalo en **SQL Editor → New query → Run**.
+3. En **Project Settings → API** copia: *Project URL*, la clave pública (*anon* o *publishable*) y la *service_role* (o *secret*).
+
+### 2. Google (inicio de sesión con Gmail)
+
+1. En <https://console.cloud.google.com> → *APIs y servicios → Credenciales* → **Crear ID de cliente OAuth** (tipo *Aplicación web*).
+2. *URI de redireccionamiento autorizados*: `https://<tu-proyecto>.supabase.co/auth/v1/callback` (aparece en Supabase al activar Google).
+3. En la *pantalla de consentimiento* añade los emails de Sofi y Flor como usuarias de prueba (o publícala).
+4. En Supabase → **Authentication → Sign In / Providers → Google**: actívalo y pega el *Client ID* y el *Client secret*.
+5. En Supabase → **Authentication → URL Configuration**:
+   - *Site URL*: `https://<tu-sitio>.netlify.app/ritmo/`
+   - *Redirect URLs*: `https://<tu-sitio>.netlify.app/ritmo/`
+6. Deja activado el proveedor **Email** (lo usa el acceso con Strava por dentro; no se envían correos).
+
+### 3. Strava
+
+1. En <https://www.strava.com/settings/api> crea una aplicación.
+2. *Authorization Callback Domain*: `<tu-sitio>.netlify.app` (solo el dominio).
+3. Copia *Client ID* y *Client Secret*.
+4. Sofi y Flor: en **Garmin Connect → Ajustes → Aplicaciones conectadas → Strava**, activad la sincronización.
+
+> Una app nueva de Strava admite pocas atletas conectadas; para dos personas sobra.
+
+### 4. Netlify
+
+1. **Add new site → Import an existing project → GitHub** y elige este repositorio. Netlify lee `netlify.toml` (build `npm run build`, publica la raíz).
+2. **Site configuration → Environment variables**:
+
+| Variable | Valor |
+|---|---|
+| `SUPABASE_URL` | Project URL de Supabase |
+| `SUPABASE_ANON_KEY` | clave pública (*anon* / *publishable*) |
+| `SUPABASE_SERVICE_ROLE_KEY` | clave *service_role* / *secret* (marca *Functions* como único alcance si puedes) |
+| `STRAVA_CLIENT_ID` | de Strava |
+| `STRAVA_CLIENT_SECRET` | de Strava |
+| `STATE_SECRET` | una cadena aleatoria larga (p. ej. `openssl rand -hex 32`) |
+| `ANTHROPIC_API_KEY` | de <https://platform.claude.com> (para la IA de macros) |
+
+3. **Deploys → Trigger deploy**. Abre `https://<tu-sitio>.netlify.app/ritmo/`, entra con Google y conecta Strava en Ajustes.
+4. En el móvil: menú del navegador → **Añadir a pantalla de inicio**.
+
+Cada `git push` a la rama conectada vuelve a desplegar.
+
+### Pasar los datos de la versión de prueba
+
+Si usaste la versión local o la vista previa: **Ajustes → Exportar** allí, y **Ajustes → Importar** en la app desplegada.
 
 ## Diseño UX/UI
 
-- Tipografía **Inter**: diseñada para pantallas, muy legible en tamaños pequeños, con **cifras tabulares** (`tabular-nums`) para que los números se alineen en tablas y no «bailen» al cambiar.
-- Escala tipográfica 1.25 sobre base 16 px (evita el zoom automático de iOS en los campos), rejilla de 8 px y objetivos táctiles de al menos 44 px.
-- Tema claro y oscuro automáticos, con contraste WCAG AA. Color con significado constante: naranja = correr, violeta = sueño, y un color fijo por macro.
-- Barra de pestañas inferior (alcance del pulgar), formularios en hojas inferiores, botón flotante para la acción principal, teclado numérico/decimal, aceptación de coma decimal y cálculos en vivo (ritmo, horas dormidas, kcal por porción).
-- Accesible: etiquetas en todos los campos, foco visible, `aria-current` en la navegación, barras de progreso con roles ARIA y respeto de `prefers-reduced-motion`.
+- Tipografía **Inter**: diseñada para pantallas, muy legible en tamaños pequeños, con **cifras tabulares** para que los números se alineen y no «bailen».
+- Escala tipográfica 1.25 sobre base 16 px (evita el zoom de iOS en los campos), rejilla de 8 px y objetivos táctiles ≥ 44 px.
+- Tema claro y oscuro automáticos con contraste WCAG AA; color con significado constante (naranja = correr, violeta = sueño, un color por macro).
+- Pestañas abajo (alcance del pulgar), formularios en hojas inferiores, teclado numérico, coma decimal y cálculos en vivo.
+- Accesible: etiquetas en todos los campos, foco visible, `aria-current`, roles ARIA en barras de progreso y `prefers-reduced-motion`.
 
-## IA (Claude)
+## Desarrollo local
 
-`POST /api/macros` es una función de Netlify (`netlify/functions/macros.mjs`) que llama a la API de Claude con salida estructurada (JSON Schema). La API key **nunca llega al navegador**.
-
-1. Crea una API key en <https://platform.claude.com>.
-2. En Netlify: *Site configuration → Environment variables* → `ANTHROPIC_API_KEY`.
-3. Netlify instala `@anthropic-ai/sdk` desde `package.json` en el despliegue.
-
-Si la variable no está configurada, la app sigue funcionando y pide los macros a mano.
-
-Desarrollo local con la función: `npx netlify dev` (con `ANTHROPIC_API_KEY` en el entorno) y abre `/ritmo/`.
+```bash
+npm install
+npx netlify dev        # con las variables de entorno de arriba en un .env
+# abre http://localhost:8888/ritmo/
+```
