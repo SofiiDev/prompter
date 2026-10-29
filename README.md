@@ -71,3 +71,41 @@ Cada `git push` a la rama publicada desplegará automáticamente una nueva versi
 ## Licencia
 
 MIT
+
+---
+
+# Ritmo (`/ritmo/`)
+
+App móvil (PWA instalable) para registrar entrenamiento, alimentación y descanso:
+
+- **Correr**: kilómetros, tiempo (h:min:s) y tipo de entrenamiento. Calcula ritmo por km y velocidad, km de la semana frente a tu objetivo, ritmo medio del mes y gráfico de los últimos 7 días.
+- **Comidas**: registra por momento del día (desayuno, comida, merienda, cena, snack) con proteína, carbohidratos, grasas y calorías. Tres formas de rellenar los macros:
+  1. **Con IA**: describe lo que comiste («2 huevos y una tostada con aguacate») y Claude desglosa cada alimento con sus macros.
+  2. **Desde una receta**: elige la receta y las porciones.
+  3. **A mano**: las calorías se calculan solas desde los macros (4/4/9 kcal/g).
+- **Recetas**: ingredientes uno por línea con cantidades para la receta completa; la IA calcula los macros de cada ingrediente y el total, y la app los divide por porción. Desde la receta registras una porción en un toque.
+- **Sueño**: hora de acostarte y levantarte (cruza medianoche), calidad 1–5, media de 7 días y déficit frente a tu objetivo.
+- **Hoy**: anillo de calorías restantes, barras de macros, resumen semanal y registro rápido.
+- **Ajustes**: objetivos diarios, exportar/importar copia de seguridad en JSON y borrar datos.
+
+Los datos se guardan solo en el dispositivo (`localStorage`) y la app funciona sin conexión (salvo el cálculo con IA).
+
+## Diseño UX/UI
+
+- Tipografía **Inter**: diseñada para pantallas, muy legible en tamaños pequeños, con **cifras tabulares** (`tabular-nums`) para que los números se alineen en tablas y no «bailen» al cambiar.
+- Escala tipográfica 1.25 sobre base 16 px (evita el zoom automático de iOS en los campos), rejilla de 8 px y objetivos táctiles de al menos 44 px.
+- Tema claro y oscuro automáticos, con contraste WCAG AA. Color con significado constante: naranja = correr, violeta = sueño, y un color fijo por macro.
+- Barra de pestañas inferior (alcance del pulgar), formularios en hojas inferiores, botón flotante para la acción principal, teclado numérico/decimal, aceptación de coma decimal y cálculos en vivo (ritmo, horas dormidas, kcal por porción).
+- Accesible: etiquetas en todos los campos, foco visible, `aria-current` en la navegación, barras de progreso con roles ARIA y respeto de `prefers-reduced-motion`.
+
+## IA (Claude)
+
+`POST /api/macros` es una función de Netlify (`netlify/functions/macros.mjs`) que llama a la API de Claude con salida estructurada (JSON Schema). La API key **nunca llega al navegador**.
+
+1. Crea una API key en <https://platform.claude.com>.
+2. En Netlify: *Site configuration → Environment variables* → `ANTHROPIC_API_KEY`.
+3. Netlify instala `@anthropic-ai/sdk` desde `package.json` en el despliegue.
+
+Si la variable no está configurada, la app sigue funcionando y pide los macros a mano.
+
+Desarrollo local con la función: `npx netlify dev` (con `ANTHROPIC_API_KEY` en el entorno) y abre `/ritmo/`.

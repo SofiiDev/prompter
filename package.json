@@ -1,0 +1,9 @@
+{
+  "name": "prompter",
+  "private": true,
+  "type": "module",
+  "description": "EasyPrompter y Ritmo — sitios estáticos; la carpeta netlify/functions contiene la API de Ritmo.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}

@@ -1,6 +1,12 @@
-# EasyPrompter — sitio estático, sin paso de build
+# EasyPrompter (/) y Ritmo (/ritmo/) — sitios estáticos, sin paso de build.
+# Ritmo usa una función (netlify/functions/macros.mjs) que llama a Claude;
+# configura la variable de entorno ANTHROPIC_API_KEY en Netlify.
 [build]
   publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 [[headers]]
   for = "/*"
@@ -20,4 +26,9 @@
   for = "/sw.js"
   [headers.values]
     # el navegador debe revalidar el service worker en cada visita
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/ritmo/sw.js"
+  [headers.values]
     Cache-Control = "no-cache"
