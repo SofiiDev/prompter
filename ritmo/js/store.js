@@ -21,7 +21,13 @@ const hhmm = (v, dflt) => (typeof v === "string" && /^\d{2}:\d{2}/.test(v) ? v.s
 const id = (v) => (typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v) ? v : uid());
 
 export function uid() {
-  return crypto.randomUUID();
+  if (crypto.randomUUID) return crypto.randomUUID();
+  // randomUUID solo existe en contextos seguros (HTTPS): UUID v4 equivalente
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const x = [...b].map((n) => n.toString(16).padStart(2, "0")).join("");
+  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
 }
 
 const clean = {
