@@ -46,6 +46,12 @@ const clean = {
     kcal: num(r.kcal, 0, 100000), p: num(r.p, 0, 10000), c: num(r.c, 0, 10000), f: num(r.f, 0, 10000),
     items: cleanItems(r.items),
   },
+  body: (b) => isDate(b?.date) && num(b.weight, 20, 400) > 0 && {
+    id: id(b.id), date: b.date,
+    weight: num(b.weight, 20, 400),
+    fat: b.fat == null || b.fat === "" || !num(b.fat) ? null : num(b.fat, 2, 75),
+    notes: str(b.notes, 500),
+  },
   sleep: (s) => isDate(s?.date) && {
     id: id(s.id), date: s.date,
     bed: hhmm(s.bed, "23:00"), wake: hhmm(s.wake, "07:00"),
@@ -68,6 +74,7 @@ const cleanGoals = (g = {}) => ({
   f: num(g.f, 0, 1000) || DEFAULT_GOALS.f,
   sleep: num(g.sleep, 1, 14) || DEFAULT_GOALS.sleep,
   km: num(g.km, 0, 1000) || DEFAULT_GOALS.km,
+  weight: num(g.weight, 0, 400) >= 20 ? num(g.weight, 20, 400) : 0,   // 0 = sin objetivo
 });
 
 /* ---------- filas de la base de datos ⇄ objetos de la app ---------- */
@@ -77,6 +84,7 @@ const fromRow = {
   meals: (m) => ({ ...m, recipeId: m.recipe_id || "", desc: m.description }),
   recipes: (r) => r,
   sleep: (s) => s,
+  body: (b) => ({ ...b, weight: b.weight_kg, fat: b.body_fat_pct }),
 };
 
 const toRow = {
@@ -91,11 +99,14 @@ const toRow = {
     kcal: r.kcal, p: r.p, c: r.c, f: r.f, items: r.items, updated_at: new Date().toISOString(),
   }),
   sleep: (s) => ({ id: s.id, date: s.date, bed: s.bed, wake: s.wake, hours: s.hours, quality: s.quality, notes: s.notes }),
+  body: (b) => ({ id: b.id, date: b.date, weight_kg: b.weight, body_fat_pct: b.fat, notes: b.notes }),
 };
 
-const COLLECTIONS = ["runs", "meals", "recipes", "sleep"];
+const COLLECTIONS = ["runs", "meals", "recipes", "sleep", "body"];
+// nombre de la tabla en Supabase de cada colección
+const TABLE = { runs: "runs", meals: "meals", recipes: "recipes", sleep: "sleep", body: "body_metrics" };
 
-export const db = { runs: [], meals: [], recipes: [], sleep: [], goals: { ...DEFAULT_GOALS } };
+export const db = { runs: [], meals: [], recipes: [], sleep: [], body: [], goals: { ...DEFAULT_GOALS } };
 export const account = { user: null, profile: null, loadedAt: 0 };
 
 /* ---------- carga ---------- */
@@ -104,7 +115,7 @@ export async function loadAll() {
   const uidv = account.user.id;
   const [profile, ...lists] = await Promise.all([
     sb.from("profiles").select("*").eq("id", uidv).single(),
-    ...COLLECTIONS.map((c) => sb.from(c).select("*")),
+    ...COLLECTIONS.map((c) => sb.from(TABLE[c]).select("*")),
   ]);
   for (const r of [profile, ...lists]) if (r.error) throw r.error;
   account.profile = profile.data;
@@ -135,18 +146,25 @@ export function upsert(collection, record) {
   const i = list.findIndex((x) => x.id === rec.id);
   if (i >= 0) list[i] = { ...list[i], ...rec, source: list[i].source ?? rec.source };
   else list.push(rec);
-  enqueue(async () => must(await sb.from(collection).upsert(toRow[collection](rec))));
+  enqueue(async () => must(await sb.from(TABLE[collection]).upsert(toRow[collection](rec))));
   return rec;
 }
 
 export function remove(collection, recId) {
   db[collection] = db[collection].filter((x) => x.id !== recId);
-  enqueue(async () => must(await sb.from(collection).delete().eq("id", recId)));
+  enqueue(async () => must(await sb.from(TABLE[collection]).delete().eq("id", recId)));
 }
 
 export function setGoals(goals) {
   db.goals = cleanGoals(goals);
   enqueue(async () => must(await sb.from("profiles").update({ goals: db.goals }).eq("id", account.user.id)));
+}
+
+/** Guarda la altura (cm) para calcular el IMC. */
+export function setHeight(cm) {
+  const v = num(cm, 100, 250);
+  account.profile.height_cm = v || null;
+  enqueue(async () => must(await sb.from("profiles").update({ height_cm: v || null }).eq("id", account.user.id)));
 }
 
 /** Espera a que terminen las escrituras pendientes. */
@@ -169,19 +187,19 @@ export async function importJSON(text) {
     return rec;
   }).filter(Boolean);
 
-  for (const c of ["recipes", "runs", "meals", "sleep"]) {
+  for (const c of ["recipes", "runs", "meals", "sleep", "body"]) {
     const list = fresh(c, raw[c]);
     for (let i = 0; i < list.length; i += 500) {
-      must(await sb.from(c).insert(list.slice(i, i + 500).map(toRow[c])));
+      must(await sb.from(TABLE[c]).insert(list.slice(i, i + 500).map(toRow[c])));
     }
   }
   if (raw.goals) must(await sb.from("profiles").update({ goals: cleanGoals(raw.goals) }).eq("id", account.user.id));
   await loadAll();
 }
 
-/** Borra las carreras, comidas y sueño de la usuaria (las recetas compartidas se quedan). */
+/** Borra los registros de la usuaria (las recetas compartidas se quedan). */
 export async function wipe() {
   await flush();
-  for (const c of ["meals", "runs", "sleep"]) must(await sb.from(c).delete().eq("user_id", account.user.id));
+  for (const c of ["meals", "runs", "sleep", "body"]) must(await sb.from(TABLE[c]).delete().eq("user_id", account.user.id));
   await loadAll();
 }

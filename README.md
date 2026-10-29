@@ -83,10 +83,13 @@ App móvil privada (PWA instalable) para **Sofi y Flor**: carreras, comidas, rec
 - **Correr**: km, tiempo y tipo. Ritmo por km, km semanales frente al objetivo, ritmo medio del mes y gráfico de 7 días. Las carreras de Strava llegan solas, con desnivel y pulso medio.
 - **Comidas**: macros a mano, desde una receta o estimados por IA a partir de una descripción («2 huevos y una tostada con aguacate»).
 - **Recetas**: ingredientes con cantidades; la IA calcula los macros totales y por porción. **Las recetas son compartidas** entre Sofi y Flor.
-- **Sueño**: horas, calidad, media de 7 días y déficit frente al objetivo.
-- **Ajustes**: objetivos, conexión con Strava, exportar/importar copia, borrar registros y cerrar sesión.
+- **Cuerpo**: peso, grasa corporal (%) e **IMC** calculado con tu altura (categorías de la OMS), con gráficos de 90 días, cambio en 30 días y distancia al peso objetivo. Incluye la pestaña de **Sueño**: horas, calidad, media de 7 días y déficit.
+- **Resumen**: todo consolidado por periodo (4 semanas, 3 meses, 12 meses o todo el historial): km, ritmo medio, calorías y proteína medias por día, sueño medio, peso, IMC y grasa con su variación; gráficos de km por semana o mes, peso, grasa, calorías y sueño frente a tus objetivos; **récords** (carrera más larga, mejor ritmo en 5 km o más, mejor semana y mejor mes) y una tabla **mes a mes**.
+- **Ajustes**: objetivos (incluido peso objetivo y altura), conexión con Strava, exportar/importar copia, borrar registros y cerrar sesión.
 
-Carreras, comidas, sueño y objetivos son **privados** de cada una (políticas RLS en Supabase).
+Pestañas: Hoy · Correr · Comidas (Diario / Recetas) · Cuerpo (Peso y grasa / Sueño) · Resumen.
+
+Carreras, comidas, sueño, mediciones y objetivos son **privados** de cada una (políticas RLS en Supabase).
 
 ## Cómo funciona
 
@@ -109,7 +112,8 @@ Carreras, comidas, sueño y objetivos son **privados** de cada una (políticas R
 
 1. Crea un proyecto en <https://supabase.com>.
 2. Abre `supabase/schema.sql`, **cambia los dos emails** (`sofi@example.com`, `flor@example.com`) por los Gmail reales de Sofi y Flor, y ejecútalo en **SQL Editor → New query → Run**.
-3. En **Project Settings → API** copia: *Project URL*, la clave pública (*anon* o *publishable*) y la *service_role* (o *secret*).
+3. Si ya lo habías ejecutado antes, **vuelve a ejecutarlo** tras cada actualización de la app: es idempotente y añade lo nuevo (por ejemplo, la tabla de peso) sin borrar datos.
+4. En **Project Settings → API** copia: *Project URL*, la clave pública (*anon* o *publishable*) y la *service_role* (o *secret*).
 
 ### 2. Google (inicio de sesión con Gmail)
 

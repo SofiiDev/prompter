@@ -40,6 +40,9 @@ create table if not exists public.profiles (
   strava_synced_at  timestamptz,
   created_at        timestamptz not null default now()
 );
+-- altura para calcular el IMC (añadida después: idempotente)
+alter table public.profiles add column if not exists height_cm numeric(5,1)
+  check (height_cm is null or height_cm between 100 and 250);
 
 -- Al crear una cuenta: rechazar emails no permitidos y crear su perfil.
 create or replace function public.handle_new_user()
@@ -132,6 +135,18 @@ create table if not exists public.sleep (
 );
 create index if not exists sleep_user_date on public.sleep (user_id, date desc);
 
+-- ---------- Peso y composición corporal ----------
+create table if not exists public.body_metrics (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  date         date not null,
+  weight_kg    numeric(5,2) not null check (weight_kg between 20 and 400),
+  body_fat_pct numeric(4,1) check (body_fat_pct is null or body_fat_pct between 2 and 75),
+  notes        text not null default '',
+  created_at   timestamptz not null default now()
+);
+create index if not exists body_metrics_user_date on public.body_metrics (user_id, date desc);
+
 -- ---------- Tokens de Strava (solo el servidor) ----------
 create table if not exists public.strava_tokens (
   user_id       uuid primary key references auth.users (id) on delete cascade,
@@ -151,6 +166,7 @@ alter table public.runs          enable row level security;
 alter table public.recipes       enable row level security;
 alter table public.meals         enable row level security;
 alter table public.sleep         enable row level security;
+alter table public.body_metrics  enable row level security;
 alter table public.strava_tokens enable row level security;  -- sin políticas: solo service role
 
 drop policy if exists "perfil propio: leer" on public.profiles;
@@ -162,12 +178,12 @@ create policy "perfil propio: editar" on public.profiles
 
 -- Las usuarias no pueden cambiar su email, nombre ni vínculo de Strava desde el navegador.
 revoke update on public.profiles from anon, authenticated;
-grant update (goals) on public.profiles to authenticated;
+grant update (goals, height_cm) on public.profiles to authenticated;
 
 do $$
 declare t text;
 begin
-  foreach t in array array['runs', 'meals', 'sleep'] loop
+  foreach t in array array['runs', 'meals', 'sleep', 'body_metrics'] loop
     execute format('drop policy if exists "filas propias" on public.%I', t);
     execute format(
       'create policy "filas propias" on public.%I for all

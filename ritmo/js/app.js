@@ -2,7 +2,8 @@
    Vistas: Hoy · Correr · Comidas · Recetas · Sueño (+ Ajustes).
    Todo el contenido del usuario se inserta como texto (nunca HTML). */
 
-import { sb, db, account, loadAll, upsert, remove, setGoals, exportJSON, importJSON, wipe, uid, flush, onWriteError } from "./store.js";
+import { sb, db, account, loadAll, upsert, remove, setGoals, setHeight, exportJSON, importJSON, wipe, uid, flush, onWriteError } from "./store.js";
+import { barChart, lineChart } from "./charts.js";
 
 /* ============ utilidades ============ */
 
@@ -13,6 +14,8 @@ const ICON = {
   meals: '<path d="M7 3v8a2 2 0 0 0 2 2v8M11 3v8M5 3v8M17 21V3c-2 1.5-3 4-3 7v4h3"/>',
   recipes: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>',
   sleep: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/>',
+  body: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 9.5a5 5 0 0 1 8 0M12 12l1.6-2.6"/>',
+  summary: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
@@ -495,6 +498,66 @@ function sleepForm(rec) {
   openSheet(rec ? "Editar sueño" : "Registrar sueño", form);
 }
 
+/* IMC = peso (kg) / altura (m)²; categorías de la OMS para adultos */
+const bmiOf = (kg) => {
+  const cm = account.profile?.height_cm;
+  return cm && kg ? kg / (cm / 100) ** 2 : 0;
+};
+function bmiLabel(bmi) {
+  if (!bmi) return "";
+  return bmi < 18.5 ? "bajo peso" : bmi < 25 ? "normal" : bmi < 30 ? "sobrepeso" : "obesidad";
+}
+const fmtDelta = (v, unit) => (Math.abs(v) < 0.05 ? `= ${unit}`.trim() : `${v > 0 ? "+" : "−"}${fmt1(Math.abs(v))} ${unit}`);
+const byDateAsc = (a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || "");
+
+function heightInput() {
+  return numInput("height", account.profile?.height_cm || "", { int: true, placeholder: "165" });
+}
+
+function bodyForm(rec) {
+  const b = rec || { date: todayISO(), weight: "", fat: null, notes: "" };
+  const last = [...db.body].sort(byDateAsc).at(-1);
+  const date = h("input", { type: "date", name: "date", value: b.date, max: todayISO(), required: true });
+  const weight = numInput("weight", b.weight, { placeholder: last ? String(last.weight).replace(".", ",") : "60,0" });
+  const fat = numInput("fat", b.fat ?? "", { placeholder: "Opcional" });
+  const height = account.profile?.height_cm ? null : heightInput();
+  const notes = h("textarea", { name: "notes", rows: 2, placeholder: "En ayunas, después de entrenar…" });
+  notes.value = b.notes || "";
+
+  const bmiOut = h("b", { class: "num" }, "—");
+  const bmiCat = h("span", {}, "");
+  const update = () => {
+    const kg = readNum(weight);
+    const cm = height ? readNum(height) : account.profile?.height_cm;
+    const bmi = cm && kg ? kg / (cm / 100) ** 2 : 0;
+    bmiOut.textContent = bmi ? fmt1(bmi) : "—";
+    bmiCat.textContent = bmi ? bmiLabel(bmi) : height ? "Indica tu altura" : "";
+  };
+  [weight, height].filter(Boolean).forEach((i) => i.addEventListener("input", update));
+  update();
+
+  const form = sheetForm(() => {
+    const kg = readNum(weight);
+    weight.setAttribute("aria-invalid", kg >= 20 ? "false" : "true");
+    if (kg < 20 || kg > 400) { weight.focus(); toast("Indica tu peso en kg"); return; }
+    const pct = readNum(fat);
+    if (pct && (pct < 2 || pct > 75)) { fat.focus(); toast("La grasa corporal va entre 2 y 75 %"); return; }
+    if (height && readNum(height)) setHeight(readNum(height));
+    upsert("body", { id: b.id || uid(), date: date.value || todayISO(), weight: kg, fat: pct || null, notes: notes.value.trim() });
+    closeSheet(); toast(rec ? "Medición actualizada" : "Medición guardada"); render();
+  },
+    field("Fecha", date),
+    h("div", { class: "row" }, field("Peso (kg)", weight), field("Grasa corporal (%)", fat)),
+    height && field("Altura (cm)", height, "Solo hace falta una vez, para calcular tu IMC."),
+    h("div", { class: "live", "aria-live": "polite" }, h("span", {}, "IMC ", bmiOut), bmiCat),
+    field("Notas", notes),
+    h("p", { class: "hint", style: "margin:-8px 0 16px" },
+      "La grasa corporal la da una báscula de bioimpedancia o una medición con plicómetro. El IMC no distingue músculo de grasa."),
+    formActions(rec && (() => { remove("body", b.id); closeSheet(); toast("Medición eliminada"); render(); })),
+  );
+  openSheet(rec ? "Editar medición" : "Registrar peso", form);
+}
+
 function settingsSheet() {
   const g = db.goals;
   const prof = account.profile;
@@ -502,7 +565,9 @@ function settingsSheet() {
     kcal: numInput("kcal", g.kcal, { int: true }), p: numInput("p", g.p, { int: true }),
     c: numInput("c", g.c, { int: true }), f: numInput("f", g.f, { int: true }),
     sleep: numInput("sleep", g.sleep), km: numInput("km", g.km),
+    weight: numInput("weight", g.weight || "", { placeholder: "Opcional" }),
   };
+  const height = heightInput();
   const fileIn = h("input", { type: "file", accept: "application/json,.json", hidden: true });
   fileIn.addEventListener("change", async () => {
     const file = fileIn.files[0];
@@ -535,6 +600,7 @@ function settingsSheet() {
 
   const form = sheetForm(() => {
     setGoals(Object.fromEntries(Object.entries(inputs).map(([k, i]) => [k, readNum(i)])));
+    if (readNum(height) !== Number(account.profile?.height_cm || 0)) setHeight(readNum(height));
     closeSheet(); toast("Objetivos guardados"); render();
   },
     h("div", { class: "account" },
@@ -549,6 +615,7 @@ function settingsSheet() {
     field("Calorías (kcal)", inputs.kcal),
     h("div", { class: "row" }, field("Proteína (g)", inputs.p), field("Carbos (g)", inputs.c), field("Grasas (g)", inputs.f)),
     h("div", { class: "row" }, field("Sueño (h/noche)", inputs.sleep), field("Km por semana", inputs.km)),
+    h("div", { class: "row" }, field("Peso objetivo (kg)", inputs.weight), field("Altura (cm)", height)),
     h("button", { type: "submit", class: "btn primary block" }, "Guardar objetivos"),
 
     h("h3", { class: "section-title" }, "Tus datos"),
@@ -716,6 +783,33 @@ function mealItem(m) {
       h("span", { class: "item-end num" }, fmt0(m.kcal), h("small", {}, `kcal · ${m.time}`))));
 }
 
+function bodyItem(b, prev) {
+  const bmi = bmiOf(b.weight);
+  return h("li", { class: "item" },
+    h("button", { type: "button", class: "item-btn", onclick: () => bodyForm(b) },
+      h("span", { class: "badge body", icon: "body" }),
+      h("span", { class: "item-main" },
+        h("span", { class: "item-title num", style: "display:block" }, `${fmt1(b.weight)} kg`, b.fat ? ` · ${fmt1(b.fat)} % grasa` : ""),
+        h("span", { class: "item-sub num" }, capitalize(dayLabel(b.date)), bmi ? ` · IMC ${fmt1(bmi)}` : "", b.notes && ` · ${b.notes}`)),
+      h("span", { class: "item-end num" }, prev ? fmtDelta(b.weight - prev.weight, "kg") : "", h("small", {}, prev ? "vs anterior" : ""))));
+}
+
+/** Pestañas internas (Comidas/Recetas, Peso/Sueño). */
+function subnav(items, current, label) {
+  return h("div", { class: "seg subnav", role: "tablist", "aria-label": label },
+    items.map(([view, text]) => h("button", {
+      type: "button", role: "tab", class: view === current ? "on" : null,
+      "aria-selected": view === current ? "true" : "false",
+      onclick: () => go(view),
+    }, text)));
+}
+const mealsNav = (v) => subnav([["meals", "Diario"], ["recipes", "Recetas"]], v, "Comidas");
+const bodyNav = (v) => subnav([["body", "Peso y grasa"], ["sleep", "Sueño"]], v, "Cuerpo");
+
+// ancho interior de una tarjeta, para dibujar los gráficos a su tamaño
+const chartWidth = () => Math.max(260, Math.min(640, viewEl.clientWidth) - 32 - 34);
+const xDate = (t) => new Date(t).toLocaleDateString("es", { day: "numeric", month: "short" });
+
 function sleepItem(s) {
   return h("li", { class: "item" },
     h("button", { type: "button", class: "item-btn", onclick: () => sleepForm(s) },
@@ -728,14 +822,16 @@ function sleepItem(s) {
 
 /* ============ vistas ============ */
 
-const state = { view: "today", mealDate: todayISO() };
+const state = { view: "today", mealDate: todayISO(), period: "3m" };
 
 const VIEWS = {
-  today: { title: "Hoy", render: viewToday },
-  runs: { title: "Correr", render: viewRuns },
-  meals: { title: "Comidas", render: viewMeals },
-  recipes: { title: "Recetas", render: viewRecipes },
-  sleep: { title: "Sueño", render: viewSleep },
+  today: { title: "Hoy", tab: "today", render: viewToday },
+  runs: { title: "Correr", tab: "runs", render: viewRuns },
+  meals: { title: "Comidas", tab: "meals", render: viewMeals },
+  recipes: { title: "Recetas", tab: "meals", render: viewRecipes },
+  body: { title: "Cuerpo", tab: "body", render: viewBody },
+  sleep: { title: "Sueño", tab: "body", render: viewSleep },
+  summary: { title: "Resumen", tab: "summary", render: viewSummary },
 };
 
 function viewToday() {
@@ -747,6 +843,8 @@ function viewToday() {
   const lastSleep = [...db.sleep].sort(byDateDesc)[0];
   const sleep7 = db.sleep.filter((s) => s.date > addDays(t, -7));
   const avgSleep = sleep7.length ? sum(sleep7, "hours") / sleep7.length : 0;
+  const lastBody = [...db.body].sort(byDateAsc).at(-1);
+  const lastBmi = lastBody ? bmiOf(lastBody.weight) : 0;
 
   return [
     h("p", { class: "muted", style: "margin:-4px 0 16px" },
@@ -761,11 +859,22 @@ function viewToday() {
         stat(avgSleep ? fmt1(avgSleep) : "—", `/ ${fmt1(g.sleep)} h`, "Media de sueño 7 días")),
       h("div", { class: "bar", style: "margin-top:16px", role: "progressbar", "aria-label": "Kilómetros de la semana", "aria-valuemin": 0, "aria-valuemax": g.km, "aria-valuenow": round1(weekKm) },
         h("i", { style: `width:${g.km ? Math.min(100, (weekKm / g.km) * 100) : 0}%;background:var(--run)` }))),
+    h("section", { class: "card", "aria-label": "Cuerpo" },
+      h("div", { class: "card-head" },
+        h("h2", {}, "Cuerpo"),
+        h("button", { type: "button", class: "link", onclick: () => go("body") }, "Ver evolución")),
+      lastBody
+        ? h("div", { class: "stats" },
+            stat(fmt1(lastBody.weight), "kg", `Peso (${dayLabel(lastBody.date).toLowerCase()})`),
+            stat(lastBmi ? fmt1(lastBmi) : "—", "", lastBmi ? `IMC · ${bmiLabel(lastBmi)}` : "IMC: falta tu altura"),
+            stat(lastBody.fat ? fmt1(lastBody.fat) : "—", "%", "Grasa corporal"))
+        : h("p", { class: "muted" }, "Registra tu peso para ver tu IMC y su evolución.")),
     h("section", { class: "card", "aria-label": "Registro rápido" },
       h("div", { class: "card-head" }, h("h2", {}, "Registrar")),
-      h("div", { class: "actions", style: "margin:0;flex-wrap:wrap" },
+      h("div", { class: "quick" },
         h("button", { type: "button", class: "btn ghost", icon: "runs", onclick: () => runForm() }, "Carrera"),
         h("button", { type: "button", class: "btn ghost", icon: "meals", onclick: () => mealForm() }, "Comida"),
+        h("button", { type: "button", class: "btn ghost", icon: "body", onclick: () => bodyForm() }, "Peso"),
         h("button", { type: "button", class: "btn ghost", icon: "sleep", onclick: () => sleepForm() }, "Sueño"))),
     h("section", { class: "card", "aria-label": "Comidas de hoy" },
       h("div", { class: "card-head" },
@@ -814,6 +923,7 @@ function viewMeals() {
   const isToday = d === todayISO();
 
   return [
+    mealsNav("meals"),
     h("div", { class: "datebar" },
       h("button", { type: "button", class: "icon-btn", icon: "left", "aria-label": "Día anterior", onclick: () => { state.mealDate = addDays(d, -1); render(); } }),
       h("strong", {}, capitalize(dayLabel(d))),
@@ -831,8 +941,9 @@ function viewMeals() {
 function viewRecipes() {
   const recipes = [...db.recipes].sort((a, b) => a.name.localeCompare(b.name, "es"));
   return [
+    mealsNav("recipes"),
     h("p", { class: "muted", style: "margin-bottom:16px" },
-      "Guarda tus recetas con sus ingredientes: la IA calcula los macros y luego registras porciones en un toque."),
+      "Compartidas entre Sofi y Flor. Guarda tus recetas con sus ingredientes: la IA calcula los macros y luego registras porciones en un toque."),
     h("section", { class: "card", "aria-label": "Mis recetas" },
       recipes.length
         ? h("ul", { class: "list" }, recipes.map((r) => h("li", { class: "item" },
@@ -860,6 +971,7 @@ function viewSleep() {
   const debt = logged.reduce((a, hrs) => a + Math.max(0, g.sleep - hrs), 0);
 
   return [
+    bodyNav("sleep"),
     h("section", { class: "card", "aria-label": "Resumen de sueño" },
       h("div", { class: "stats" },
         stat(avg ? fmt1(avg) : "—", `/ ${fmt1(g.sleep)} h`, "Media 7 días"),
@@ -874,6 +986,252 @@ function viewSleep() {
         ? h("ul", { class: "list" }, list.slice(0, 100).map(sleepItem))
         : emptyState("sleep", "Sin registros de sueño", "Anota a qué hora te acostaste y te levantaste.")),
     fab("Sueño", () => sleepForm()),
+  ];
+}
+
+function viewBody() {
+  const g = db.goals;
+  const list = [...db.body].sort(byDateAsc);
+  const last = list.at(-1);
+  const t = todayISO();
+  const since = addDays(t, -90);
+  const recent = list.filter((b) => b.date >= since);
+  const month = list.filter((b) => b.date >= addDays(t, -30));
+  const bmi = last ? bmiOf(last.weight) : 0;
+  const fats = recent.filter((b) => b.fat);
+
+  const heightCard = !account.profile?.height_cm && (() => {
+    const input = heightInput();
+    return h("section", { class: "card", "aria-label": "Altura" },
+      h("h2", { style: "margin-bottom:8px" }, "¿Cuánto mides?"),
+      h("p", { class: "muted", style: "margin-bottom:12px" }, "Con tu altura calculamos el IMC de cada medición."),
+      h("div", { class: "inline-form" }, field("Altura (cm)", input),
+        h("button", { type: "button", class: "btn primary", onclick: () => {
+          const cm = readNum(input);
+          if (cm < 100 || cm > 250) { input.focus(); toast("Indica tu altura en centímetros"); return; }
+          setHeight(cm); toast("Altura guardada"); render();
+        } }, "Guardar")));
+  })();
+
+  return [
+    bodyNav("body"),
+    heightCard,
+    h("section", { class: "card", "aria-label": "Última medición" },
+      last
+        ? h("div", { class: "stats" },
+            stat(fmt1(last.weight), "kg", month.length > 1 ? `${fmtDelta(last.weight - month[0].weight, "kg")} en 30 días` : `Peso · ${dayLabel(last.date).toLowerCase()}`),
+            stat(bmi ? fmt1(bmi) : "—", "", bmi ? `IMC · ${bmiLabel(bmi)}` : "IMC"),
+            stat(last.fat ? fmt1(last.fat) : "—", "%", "Grasa corporal"),
+            g.weight ? stat(fmt1(Math.abs(last.weight - g.weight)), "kg", Math.abs(last.weight - g.weight) < 0.05 ? "¡Objetivo alcanzado!" : `para tu objetivo (${fmt1(g.weight)} kg)`) : null)
+        : emptyState("body", "Sin mediciones todavía", "Registra tu peso y, si la tienes, tu grasa corporal.")),
+    recent.length && h("section", { class: "card", "aria-label": "Peso últimos 90 días" },
+      h("div", { class: "card-head" }, h("h2", {}, "Peso · 90 días")),
+      lineChart({
+        data: recent.map((b) => ({ t: parseDate(b.date).getTime(), v: b.weight, tip: `${shortDate(b.date)} · ${fmt1(b.weight)} kg` })),
+        color: "var(--chart-body)", width: chartWidth(), domain: [parseDate(since).getTime(), parseDate(t).getTime()],
+        goal: g.weight || null, goalLabel: `objetivo ${fmt1(g.weight)} kg`, fmt: (v) => fmt1(v), xFmt: xDate,
+        ariaLabel: `Peso de los últimos 90 días: de ${fmt1(recent[0].weight)} a ${fmt1(last.weight)} kg`,
+      })),
+    fats.length > 0 && h("section", { class: "card", "aria-label": "Grasa corporal últimos 90 días" },
+      h("div", { class: "card-head" }, h("h2", {}, "Grasa corporal · 90 días")),
+      lineChart({
+        data: fats.map((b) => ({ t: parseDate(b.date).getTime(), v: b.fat, tip: `${shortDate(b.date)} · ${fmt1(b.fat)} %` })),
+        color: "var(--chart-fat)", width: chartWidth(), domain: [parseDate(since).getTime(), parseDate(t).getTime()],
+        fmt: (v) => `${fmt0(v)} %`, xFmt: xDate,
+        ariaLabel: `Grasa corporal de los últimos 90 días: de ${fmt1(fats[0].fat)} a ${fmt1(fats.at(-1).fat)} %`,
+      })),
+    h("section", { class: "card", "aria-label": "Historial de mediciones" },
+      h("div", { class: "card-head" }, h("h2", {}, "Historial")),
+      list.length
+        ? h("ul", { class: "list" }, list.slice().reverse().slice(0, 100).map((b, i, arr) => bodyItem(b, arr[i + 1])))
+        : h("p", { class: "muted" }, "Aquí aparecerán tus mediciones.")),
+    fab("Peso", () => bodyForm()),
+  ];
+}
+
+/* ============ resumen ============ */
+
+const PERIODS = [["4s", "4 semanas"], ["3m", "3 meses"], ["12m", "12 meses"], ["todo", "Todo"]];
+
+function periodRange(key) {
+  const t = todayISO();
+  if (key === "4s") return { start: addDays(weekStart(t), -21), unit: "week" };
+  if (key === "3m") return { start: addDays(weekStart(t), -12 * 7), unit: "week" };
+  const d = parseDate(t);
+  if (key === "12m") {
+    d.setMonth(d.getMonth() - 11, 1);
+  } else {
+    const first = [...db.runs, ...db.meals, ...db.sleep, ...db.body].map((x) => x.date).sort()[0] || t;
+    d.setTime(parseDate(first).getTime());
+    d.setDate(1);
+  }
+  return { start: iso(d), unit: "month" };
+}
+
+function bucketList(start, unit) {
+  const t = todayISO(), out = [];
+  const multiYear = unit === "month" && start.slice(0, 4) !== t.slice(0, 4);
+  if (unit === "week") {
+    for (let k = start; k <= t; k = addDays(k, 7)) out.push({ key: k, label: shortDate(k), long: `semana del ${shortDate(k)}` });
+  } else {
+    const d = parseDate(start);
+    while (iso(d) <= t) {
+      const key = iso(d).slice(0, 7);
+      const mon = d.toLocaleDateString("es", { month: "short" }).replace(".", "");
+      out.push({ key, label: multiYear ? `${mon} ${String(d.getFullYear()).slice(2)}` : mon, long: d.toLocaleDateString("es", { month: "long", year: "numeric" }) });
+      d.setMonth(d.getMonth() + 1);
+    }
+  }
+  return out;
+}
+const bucketOf = (date, unit) => (unit === "week" ? weekStart(date) : date.slice(0, 7));
+
+/** Agrupa registros por cubo (semana o mes). */
+function groupBy(list, unit) {
+  const m = new Map();
+  for (const x of list) {
+    const k = bucketOf(x.date, unit);
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(x);
+  }
+  return m;
+}
+
+/** kcal medias por día con registros. */
+function kcalPerDay(meals) {
+  const days = new Set(meals.map((m) => m.date));
+  return days.size ? sum(meals, "kcal") / days.size : 0;
+}
+const avgOf = (list, k) => (list.length ? sum(list, k) / list.length : 0);
+
+function viewSummary() {
+  const g = db.goals;
+  const { start, unit } = periodRange(state.period);
+  const inP = (x) => x.date >= start;
+  const runs = db.runs.filter(inP), meals = db.meals.filter(inP), sleep = db.sleep.filter(inP);
+  const body = db.body.filter(inP).sort(byDateAsc);
+  const timed = runs.filter((r) => r.sec && r.km);
+  const buckets = bucketList(start, unit);
+  const W = chartWidth();
+  const per = unit === "week" ? "semana" : "mes";
+
+  const runsBy = groupBy(runs, unit), mealsBy = groupBy(meals, unit), sleepBy = groupBy(sleep, unit), bodyBy = groupBy(body, unit);
+  const kmData = buckets.map((b) => {
+    const v = sum(runsBy.get(b.key) || [], "km");
+    return { label: b.label, value: v, tip: `${capitalize(b.long)} · ${fmt1(v)} km` };
+  });
+  const kcalData = buckets.map((b) => {
+    const v = kcalPerDay(mealsBy.get(b.key) || []);
+    return { label: b.label, value: v, tip: `${capitalize(b.long)} · ${v ? `${fmt0(v)} kcal/día` : "sin registros"}` };
+  });
+  const sleepData = buckets.map((b) => {
+    const v = avgOf(sleepBy.get(b.key) || [], "hours");
+    return { label: b.label, value: v, tip: `${capitalize(b.long)} · ${v ? fmtHours(v) : "sin registros"}` };
+  });
+
+  const firstW = body[0], lastW = body.at(-1);
+  const fatList = body.filter((b) => b.fat);
+  const bmi = lastW ? bmiOf(lastW.weight) : 0;
+  const domain = [parseDate(start).getTime(), parseDate(todayISO()).getTime()];
+
+  // récords de todo el historial
+  const allRuns = db.runs;
+  const longest = allRuns.reduce((a, r) => (!a || r.km > a.km ? r : a), null);
+  const fastest = allRuns.filter((r) => r.km >= 5 && r.sec).reduce((a, r) => (!a || r.sec / r.km < a.sec / a.km ? r : a), null);
+  const bestOf = (u) => [...groupBy(allRuns, u)].map(([k, l]) => [k, sum(l, "km")]).sort((a, b) => b[1] - a[1])[0];
+  const bestWeek = bestOf("week"), bestMonth = bestOf("month");
+  const monthName = (k) => parseDate(k + "-01").toLocaleDateString("es", { month: "long", year: "numeric" });
+
+  const months = bucketList(unit === "month" ? start : start.slice(0, 8) + "01", "month").reverse();
+  const mRuns = groupBy(db.runs, "month"), mMeals = groupBy(db.meals, "month"), mSleep = groupBy(db.sleep, "month"), mBody = groupBy([...db.body].sort(byDateAsc), "month");
+
+  const empty = !runs.length && !meals.length && !sleep.length && !body.length;
+
+  return [
+    h("div", { class: "seg period", role: "radiogroup", "aria-label": "Periodo" },
+      PERIODS.map(([k, label]) => h("label", {},
+        h("input", { type: "radio", name: "period", value: k, checked: k === state.period, onchange: () => { state.period = k; render(); } }),
+        h("span", {}, label)))),
+
+    empty
+      ? h("section", { class: "card" }, emptyState("summary", "Nada registrado en este periodo", "Cuando registres carreras, comidas, sueño o peso, aquí verás su evolución."))
+      : [
+    h("section", { class: "card", "aria-label": "Totales del periodo" },
+      h("div", { class: "card-head" }, h("h2", {}, "En este periodo"), h("span", { class: "muted" }, `desde ${shortDate(start)}`)),
+      h("div", { class: "stats" },
+        stat(fmt1(sum(runs, "km")), "km", `${runs.length} ${runs.length === 1 ? "carrera" : "carreras"}`),
+        stat(timed.length ? fmtDur(sum(timed, "sec") / sum(timed, "km")) : "—", "/km", "Ritmo medio"),
+        stat(meals.length ? fmt0(kcalPerDay(meals)) : "—", "kcal", `Media diaria · objetivo ${fmt0(g.kcal)}`),
+        stat(meals.length ? fmt0(sum(meals, "p") / new Set(meals.map((m) => m.date)).size) : "—", "g", `Proteína/día · objetivo ${fmt0(g.p)}`),
+        stat(sleep.length ? fmt1(avgOf(sleep, "hours")) : "—", "h", `Sueño medio · objetivo ${fmt1(g.sleep)}`),
+        stat(lastW ? fmt1(lastW.weight) : "—", "kg", body.length > 1 ? `Peso · ${fmtDelta(lastW.weight - firstW.weight, "kg")}` : "Peso"),
+        stat(bmi ? fmt1(bmi) : "—", "", bmi ? `IMC · ${bmiLabel(bmi)}` : "IMC"),
+        stat(fatList.length ? fmt1(fatList.at(-1).fat) : "—", "%", fatList.length > 1 ? `Grasa · ${fmtDelta(fatList.at(-1).fat - fatList[0].fat, "pts")}` : "Grasa corporal"))),
+
+    h("section", { class: "card", "aria-label": `Kilómetros por ${per}` },
+      h("div", { class: "card-head" }, h("h2", {}, `Kilómetros por ${per}`)),
+      barChart({
+        data: kmData, color: "var(--chart-run)", width: W, fmt: (v) => fmt0(v),
+        goal: unit === "week" ? g.km : null, goalLabel: `objetivo ${fmt0(g.km)} km`,
+        ariaLabel: `Kilómetros por ${per}: total ${fmt1(sum(runs, "km"))} km`,
+      })),
+
+    body.length > 0 && h("section", { class: "card", "aria-label": "Evolución del peso" },
+      h("div", { class: "card-head" }, h("h2", {}, "Peso"), body.length > 1 ? h("span", { class: "muted num" }, fmtDelta(lastW.weight - firstW.weight, "kg")) : null),
+      lineChart({
+        data: body.map((b) => ({ t: parseDate(b.date).getTime(), v: b.weight, tip: `${shortDate(b.date)} · ${fmt1(b.weight)} kg` })),
+        color: "var(--chart-body)", width: W, domain, goal: g.weight || null, goalLabel: `objetivo ${fmt1(g.weight)} kg`,
+        fmt: (v) => fmt1(v), xFmt: xDate, ariaLabel: `Peso: de ${fmt1(firstW.weight)} a ${fmt1(lastW.weight)} kg`,
+      })),
+
+    fatList.length > 0 && h("section", { class: "card", "aria-label": "Evolución de la grasa corporal" },
+      h("div", { class: "card-head" }, h("h2", {}, "Grasa corporal")),
+      lineChart({
+        data: fatList.map((b) => ({ t: parseDate(b.date).getTime(), v: b.fat, tip: `${shortDate(b.date)} · ${fmt1(b.fat)} %` })),
+        color: "var(--chart-fat)", width: W, domain, fmt: (v) => `${fmt0(v)} %`, xFmt: xDate,
+        ariaLabel: `Grasa corporal: de ${fmt1(fatList[0].fat)} a ${fmt1(fatList.at(-1).fat)} %`,
+      })),
+
+    meals.length > 0 && h("section", { class: "card", "aria-label": `Calorías medias por ${per}` },
+      h("div", { class: "card-head" }, h("h2", {}, "Calorías por día"), h("span", { class: "muted" }, `media de cada ${per}`)),
+      barChart({
+        data: kcalData, color: "var(--chart-kcal)", width: W, fmt: (v) => fmt0(v),
+        goal: g.kcal, goalLabel: `objetivo ${fmt0(g.kcal)}`, ariaLabel: `Calorías medias por día en cada ${per}`,
+      })),
+
+    sleep.length > 0 && h("section", { class: "card", "aria-label": `Sueño medio por ${per}` },
+      h("div", { class: "card-head" }, h("h2", {}, "Horas de sueño"), h("span", { class: "muted" }, `media de cada ${per}`)),
+      barChart({
+        data: sleepData, color: "var(--chart-sleep)", width: W, fmt: (v) => fmt0(v),
+        goal: g.sleep, goalLabel: `objetivo ${fmt1(g.sleep)} h`, ariaLabel: `Horas de sueño medias en cada ${per}`,
+      })),
+      ],
+
+    allRuns.length > 0 && h("section", { class: "card", "aria-label": "Récords" },
+      h("div", { class: "card-head" }, h("h2", {}, "Récords"), h("span", { class: "muted" }, "todo el historial")),
+      h("ul", { class: "list records" },
+        longest && h("li", { class: "item" }, h("span", { class: "item-main" }, h("span", { class: "item-title", style: "display:block" }, "Carrera más larga"), h("span", { class: "item-sub" }, capitalize(dayLabel(longest.date)))), h("span", { class: "item-end num" }, `${fmt1(longest.km)} km`)),
+        fastest && h("li", { class: "item" }, h("span", { class: "item-main" }, h("span", { class: "item-title", style: "display:block" }, "Mejor ritmo (5 km o más)"), h("span", { class: "item-sub" }, `${capitalize(dayLabel(fastest.date))} · ${fmt1(fastest.km)} km`)), h("span", { class: "item-end num" }, fmtPace(fastest.sec, fastest.km))),
+        bestWeek && h("li", { class: "item" }, h("span", { class: "item-main" }, h("span", { class: "item-title", style: "display:block" }, "Semana con más km"), h("span", { class: "item-sub" }, `Semana del ${shortDate(bestWeek[0])}`)), h("span", { class: "item-end num" }, `${fmt1(bestWeek[1])} km`)),
+        bestMonth && h("li", { class: "item" }, h("span", { class: "item-main" }, h("span", { class: "item-title", style: "display:block" }, "Mes con más km"), h("span", { class: "item-sub" }, capitalize(monthName(bestMonth[0])))), h("span", { class: "item-end num" }, `${fmt1(bestMonth[1])} km`)))),
+
+    !empty && h("section", { class: "card", "aria-label": "Mes a mes" },
+      h("div", { class: "card-head" }, h("h2", {}, "Mes a mes")),
+      h("div", { class: "table-wrap" },
+        h("table", { class: "table" },
+          h("thead", {}, h("tr", {},
+            h("th", { scope: "col" }, "Mes"), h("th", { scope: "col", class: "n" }, "Km"), h("th", { scope: "col", class: "n" }, "Carreras"),
+            h("th", { scope: "col", class: "n" }, "Kcal/día"), h("th", { scope: "col", class: "n" }, "Sueño"), h("th", { scope: "col", class: "n" }, "Peso"))),
+          h("tbody", {}, months.map((m) => {
+            const r = mRuns.get(m.key) || [], ml = mMeals.get(m.key) || [], sl = mSleep.get(m.key) || [], bd = mBody.get(m.key) || [];
+            return h("tr", {},
+              h("th", { scope: "row" }, capitalize(m.long)),
+              h("td", { class: "n" }, r.length ? fmt1(sum(r, "km")) : "—"),
+              h("td", { class: "n" }, r.length || "—"),
+              h("td", { class: "n" }, ml.length ? fmt0(kcalPerDay(ml)) : "—"),
+              h("td", { class: "n" }, sl.length ? `${fmt1(avgOf(sl, "hours"))} h` : "—"),
+              h("td", { class: "n" }, bd.length ? `${fmt1(bd.at(-1).weight)} kg` : "—"));
+          }))))),
   ];
 }
 
@@ -906,13 +1264,25 @@ function render() {
   titleEl.textContent = v.title;
   document.title = `${v.title} · Ritmo`;
   tabs.forEach((b) => {
-    if (b.dataset.view === state.view) b.setAttribute("aria-current", "page");
+    if (b.dataset.view === v.tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
   });
   viewEl.replaceChildren(...[v.render()].flat(Infinity).filter(Boolean));
 }
 
 window.addEventListener("hashchange", () => { if (account.user) go(location.hash.slice(1)); });
+
+// los gráficos se dibujan al ancho de la pantalla: redibujar al girar el móvil
+let resizeTimer;
+let lastWidth = window.innerWidth;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
+    if (account.user && ["summary", "body"].includes(state.view)) render();
+  }, 200);
+});
 
 /* ============ sesión ============ */
 
