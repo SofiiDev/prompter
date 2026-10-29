@@ -230,12 +230,24 @@ function macroFields(values = {}) {
   };
 }
 
+/** Botón destructivo en dos toques: el primero pide confirmación en el
+    propio botón (sin diálogos del navegador), el segundo ejecuta. */
+function confirmButton(label, confirmLabel, onConfirm, cls = "btn danger") {
+  let armed = false, timer;
+  const btn = h("button", { type: "button", class: cls }, label);
+  btn.addEventListener("click", () => {
+    if (armed) { clearTimeout(timer); onConfirm(); return; }
+    armed = true;
+    btn.textContent = confirmLabel;
+    btn.classList.add("armed");
+    timer = setTimeout(() => { armed = false; btn.textContent = label; btn.classList.remove("armed"); }, 4000);
+  });
+  return btn;
+}
+
 function formActions(onDelete, saveLabel = "Guardar") {
   return h("div", { class: "actions" },
-    onDelete && h("button", {
-      type: "button", class: "btn danger",
-      onclick: () => { if (confirm("¿Eliminar este registro? No se puede deshacer.")) onDelete(); },
-    }, "Eliminar"),
+    onDelete && confirmButton("Eliminar", "¿Seguro? Toca otra vez", onDelete),
     h("button", { type: "submit", class: "btn primary" }, saveLabel),
   );
 }
@@ -499,14 +511,8 @@ function settingsSheet() {
       h("button", { type: "button", class: "btn ghost", onclick: downloadBackup }, "Exportar"),
       h("button", { type: "button", class: "btn ghost", onclick: () => fileIn.click() }, "Importar")),
     fileIn,
-    h("button", {
-      type: "button", class: "btn danger block", style: "margin-top:12px",
-      onclick: () => {
-        if (confirm("¿Borrar todos tus registros, recetas y objetivos? No se puede deshacer.")) {
-          wipe(); closeSheet(); toast("Datos borrados"); render();
-        }
-      },
-    }, "Borrar todos los datos"),
+    confirmButton("Borrar todos los datos", "Se borrará todo. Toca otra vez",
+      () => { wipe(); closeSheet(); toast("Datos borrados"); render(); }, "btn danger block wipe"),
     h("p", { class: "hint", style: "margin-top:24px" },
       "Las estimaciones de la IA son aproximadas: revísalas y ajústalas si conoces los valores exactos de la etiqueta."),
   );

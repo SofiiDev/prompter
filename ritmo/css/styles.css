@@ -264,6 +264,8 @@ main { padding: 0 var(--s4) 72px; max-width: 640px; margin: 0 auto; outline: non
 .btn.primary { background: var(--accent); color: var(--accent-ink); }
 .btn.ghost { background: transparent; border-color: var(--line); }
 .btn.danger { background: transparent; color: var(--danger); border-color: var(--line); }
+.btn.danger.armed { background: var(--danger); color: var(--surface); border-color: var(--danger); }
+.btn.wipe { margin-top: var(--s3); }
 .btn.block { width: 100%; }
 .btn:disabled { opacity: .55; cursor: progress; }
 .btn.ai { background: var(--accent-soft); color: var(--accent); }
