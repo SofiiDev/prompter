@@ -1,4 +1,4 @@
-/* Ritmo — utilidades compartidas por las funciones de Netlify.
+/* FlorLovesRunning — utilidades compartidas por las funciones de Netlify.
    Las claves secretas (service role de Supabase, Strava, Anthropic)
    solo existen aquí, en el servidor. */
 

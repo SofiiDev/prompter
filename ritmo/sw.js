@@ -1,4 +1,4 @@
-/* Ritmo — service worker
+/* FlorLovesRunning — service worker
    Red primero para que las actualizaciones lleguen enseguida;
    si no hay conexión se sirve la copia en caché (funciona offline). */
 

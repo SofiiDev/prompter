@@ -1,4 +1,4 @@
-/* Ritmo — app principal
+/* FlorLovesRunning — app principal
    Vistas: Hoy · Correr · Comidas · Recetas · Sueño (+ Ajustes).
    Todo el contenido del usuario se inserta como texto (nunca HTML). */
 
@@ -578,7 +578,7 @@ function settingsSheet() {
       closeSheet(); toast("Datos importados"); render();
     } catch (err) {
       console.error(err);
-      toast(err instanceof SyntaxError ? "El archivo no es una copia válida de Ritmo" : "No se pudo importar. Inténtalo de nuevo.");
+      toast(err instanceof SyntaxError ? "El archivo no es una copia válida de FlorLovesRunning" : "No se pudo importar. Inténtalo de nuevo.");
     }
   });
 
@@ -1262,7 +1262,7 @@ function go(view) {
 function render() {
   const v = VIEWS[state.view];
   titleEl.textContent = v.title;
-  document.title = `${v.title} · Ritmo`;
+  document.title = `${v.title} · FlorLovesRunning`;
   tabs.forEach((b) => {
     if (b.dataset.view === v.tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
@@ -1294,7 +1294,7 @@ const LOGIN_ERRORS = {
   strava_token: "Strava no respondió. Inténtalo de nuevo.",
   strava_save: "No se pudo guardar la conexión con Strava.",
   strava_login: "No se pudo iniciar sesión con Strava. Prueba con Google.",
-  denied: "Ritmo es privada: ese email no tiene acceso.",
+  denied: "FlorLovesRunning es privada: ese email no tiene acceso.",
 };
 
 function setChrome(signedIn) {
@@ -1303,7 +1303,7 @@ function setChrome(signedIn) {
 
 function renderLogin(errorKey) {
   setChrome(false);
-  document.title = "Ritmo";
+  document.title = "FlorLovesRunning";
   const status = h("p", { class: "error", role: "alert" }, errorKey ? LOGIN_ERRORS[errorKey] || "No se pudo iniciar sesión." : "");
   const google = h("button", { type: "button", class: "btn block google-btn", icon: "google" }, "Continuar con Google");
   google.addEventListener("click", async () => {
@@ -1316,7 +1316,7 @@ function renderLogin(errorKey) {
   });
   viewEl.replaceChildren(h("section", { class: "login" },
     h("img", { src: "icons/icon.svg", alt: "", width: 72, height: 72 }),
-    h("h1", {}, "Ritmo"),
+    h("h1", {}, "FlorLovesRunning"),
     h("p", { class: "muted" }, "Kilómetros, comidas y sueño de Sofi y Flor."),
     h("div", { class: "login-actions" },
       google,
@@ -1339,7 +1339,7 @@ function enterApp(user) {
 
 async function startApp(user) {
   account.user = user;
-  renderMessage("Ritmo", "Cargando tus datos…");
+  renderMessage("FlorLovesRunning", "Cargando tus datos…");
   try {
     await loadAll();
   } catch (err) {
@@ -1391,7 +1391,7 @@ document.addEventListener("visibilitychange", () => {
 
 async function boot() {
   if (!sb) {
-    renderMessage("Falta configurar Ritmo", "No se encontró la configuración de Supabase (js/config.js). Revisa las variables SUPABASE_URL y SUPABASE_ANON_KEY en Netlify y vuelve a desplegar.");
+    renderMessage("Falta configurar FlorLovesRunning", "No se encontró la configuración de Supabase (js/config.js). Revisa las variables SUPABASE_URL y SUPABASE_ANON_KEY en Netlify y vuelve a desplegar.");
     return;
   }
   // primero deja que Supabase lea la vuelta de Google (?code= o #access_token=) y luego limpia la URL

@@ -1,4 +1,4 @@
-/* Ritmo — inicio del flujo OAuth de Strava
+/* FlorLovesRunning — inicio del flujo OAuth de Strava
    GET  /api/strava/start            → redirige a Strava para iniciar sesión
    POST /api/strava/start (Bearer)   → { url } para conectar Strava a la cuenta actual */
 

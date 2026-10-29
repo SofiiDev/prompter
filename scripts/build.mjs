@@ -1,4 +1,4 @@
-/* Ritmo — paso de build de Netlify (npm run build)
+/* FlorLovesRunning — paso de build de Netlify (npm run build)
    1. Copia el cliente de Supabase a ritmo/vendor (la CSP solo permite scripts propios).
    2. Escribe ritmo/js/config.js con la configuración PÚBLICA de Supabase
       (URL y anon key; la seguridad la dan las políticas RLS).
@@ -24,4 +24,4 @@ if (/service_role/.test(Buffer.from(anon.split(".")[1] || "", "base64url").toStr
 
 writeFileSync(join(root, "ritmo/js/config.js"),
   `/* generado por scripts/build.mjs */\nwindow.RITMO_CONFIG = ${JSON.stringify({ supabaseUrl: url, supabaseAnonKey: anon })};\n`);
-console.log("Ritmo: vendor/supabase.js y js/config.js listos");
+console.log("FlorLovesRunning: vendor/supabase.js y js/config.js listos");

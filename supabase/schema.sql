@@ -1,5 +1,5 @@
 -- ============================================================
--- Ritmo — esquema de Supabase
+-- FlorLovesRunning — esquema de Supabase
 -- Ejecuta este archivo completo en Supabase → SQL Editor → New query.
 -- Es idempotente: puedes volver a ejecutarlo tras cambios.
 -- ============================================================
@@ -54,7 +54,7 @@ declare
 begin
   select name into allowed_name from public.allowed_emails where email = lower(new.email);
   if allowed_name is null then
-    raise exception 'Ritmo es privada: este email no tiene acceso';
+    raise exception 'FlorLovesRunning es privada: este email no tiene acceso';
   end if;
   insert into public.profiles (id, email, name)
   values (new.id, lower(new.email), allowed_name)

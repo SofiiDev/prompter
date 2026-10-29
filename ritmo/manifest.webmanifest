@@ -1,6 +1,6 @@
 {
-  "name": "Ritmo — running, comidas y sueño",
-  "short_name": "Ritmo",
+  "name": "FlorLovesRunning — running, comidas y sueño",
+  "short_name": "FlorLovesRunning",
   "description": "Registra kilómetros, tiempos, comidas, macros y horas de sueño. Calcula macros con IA.",
   "lang": "es",
   "start_url": "./",

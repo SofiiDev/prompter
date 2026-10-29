@@ -1,4 +1,4 @@
-/* Ritmo — datos en Supabase
+/* FlorLovesRunning — datos en Supabase
    Al iniciar sesión se cargan todos los registros de la usuaria (y las
    recetas compartidas) en memoria; las vistas leen de `db` al instante y
    cada cambio se escribe en Supabase en segundo plano, en orden. La
@@ -182,7 +182,7 @@ export function exportJSON() {
   return JSON.stringify({ app: "ritmo", version: 2, exported: new Date().toISOString(), ...db }, null, 2);
 }
 
-/** Importa una copia (también la de la versión local de Ritmo) como registros nuevos. */
+/** Importa una copia (también la de la versión local de FlorLovesRunning) como registros nuevos. */
 export async function importJSON(text) {
   const raw = JSON.parse(text);
   const recipeIds = new Map();

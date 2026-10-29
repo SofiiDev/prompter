@@ -1,4 +1,4 @@
-/* Ritmo — trae las carreras nuevas de Strava
+/* FlorLovesRunning — trae las carreras nuevas de Strava
    POST /api/strava/sync (Bearer)            → { added, total }
    POST /api/strava/sync { disconnect: true } → desvincula Strava
    Las actividades de Garmin llegan a Strava solas; aquí se importan

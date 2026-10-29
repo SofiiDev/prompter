@@ -1,4 +1,4 @@
-/* Ritmo — estimación de macros con Claude
+/* FlorLovesRunning — estimación de macros con Claude
    POST /api/macros  { text: "2 huevos y una tostada", servings?: 4 }
    → { items: [{ name, quantity, kcal, p, c, f }], total: { kcal, p, c, f }, notes }
    Requiere sesión de Supabase. La API key vive solo en el servidor (ANTHROPIC_API_KEY). */

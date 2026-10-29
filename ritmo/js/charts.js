@@ -1,4 +1,4 @@
-/* Ritmo — gráficos SVG sin dependencias
+/* FlorLovesRunning — gráficos SVG sin dependencias
    Barras y líneas de una sola serie (cada gráfico mide una cosa: sin
    doble eje), con rejilla discreta, línea de objetivo opcional y
    tooltip al pasar el dedo o el ratón. Los colores salen de tokens CSS. */

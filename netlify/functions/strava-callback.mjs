@@ -1,4 +1,4 @@
-/* Ritmo — vuelta de Strava tras autorizar
+/* FlorLovesRunning — vuelta de Strava tras autorizar
    - mode "connect": guarda los tokens y vincula la atleta a la cuenta.
    - mode "login":   busca la cuenta vinculada a esa atleta y crea un
                      enlace de acceso de un solo uso que la app canjea. */
